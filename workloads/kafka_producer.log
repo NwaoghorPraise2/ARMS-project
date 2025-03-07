@@ -1,0 +1,79 @@
+2025-03-07 12:49:15,815 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-1 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+2025-03-07 12:49:15,816 - INFO - Probing node bootstrap-1 broker version
+2025-03-07 12:49:15,816 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-1 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: Connection complete.
+2025-03-07 12:49:16,326 - INFO - Broker version identified as 2.6.0
+2025-03-07 12:49:16,326 - INFO - Set configuration api_version=(2, 6, 0) to skip auto check_version requests on startup
+2025-03-07 12:49:16,327 - INFO - Starting AI workload simulation with profile: Random
+2025-03-07 12:49:16,327 - INFO - Duration: Unlimited
+2025-03-07 12:49:16,330 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=1 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+2025-03-07 12:49:16,330 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=1 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: Connection complete.
+2025-03-07 12:49:16,330 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-1 host=localhost:9092 <connected> [IPv6 ('::1', 9092, 0, 0)]>: Closing connection. 
+2025-03-07 12:49:16,508 - INFO - Sent: Workload ID: 4676 | Type: batch | Criticality: non_critical | Pattern: batch | Resource: io_intensive | Partition: 2 | Offset: 11
+2025-03-07 12:49:19,979 - INFO - Sent: Workload ID: 5895 | Type: near_real_time | Criticality: non_critical | Pattern: event_driven | Resource: io_intensive | Partition: 0 | Offset: 10
+2025-03-07 12:49:21,205 - INFO - Sent: Workload ID: 2398 | Type: batch | Criticality: non_critical | Pattern: batch | Resource: hybrid | Partition: 0 | Offset: 11
+2025-03-07 12:49:23,781 - INFO - Sent: Workload ID: 3485 | Type: near_real_time | Criticality: business_critical | Pattern: stream_processing | Resource: hybrid | Partition: 0 | Offset: 12
+2025-03-07 12:58:27,402 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-1 host=localhost:9093 <connecting> [IPv6 ('::1', 9093, 0, 0)]>: connecting to localhost:9093 [('::1', 9093, 0, 0) IPv6]
+2025-03-07 12:58:27,402 - INFO - Probing node bootstrap-1 broker version
+2025-03-07 12:58:27,403 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-1 host=localhost:9093 <connecting> [IPv6 ('::1', 9093, 0, 0)]>: Connection complete.
+2025-03-07 12:58:27,801 - INFO - Broker version identified as 2.6.0
+2025-03-07 12:58:27,801 - INFO - Set configuration api_version=(2, 6, 0) to skip auto check_version requests on startup
+2025-03-07 12:58:27,801 - INFO - Starting AI workload simulation with profile: Random
+2025-03-07 12:58:27,801 - INFO - Duration: Unlimited
+2025-03-07 12:58:27,804 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=1 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+2025-03-07 12:58:27,804 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=1 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: Connection complete.
+2025-03-07 12:58:27,804 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=bootstrap-1 host=localhost:9093 <connected> [IPv6 ('::1', 9093, 0, 0)]>: Closing connection. 
+2025-03-07 12:58:27,956 - INFO - Sent: Workload ID: 6572 | Type: real_time | Criticality: non_critical | Pattern: stream_processing | Resource: hybrid | Partition: 2 | Offset: 12
+2025-03-07 12:58:28,365 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=2 host=localhost:9093 <connecting> [IPv6 ('::1', 9093, 0, 0)]>: connecting to localhost:9093 [('::1', 9093, 0, 0) IPv6]
+2025-03-07 12:58:28,366 - INFO - <BrokerConnection client_id=kafka-python-producer-1, node_id=2 host=localhost:9093 <connecting> [IPv6 ('::1', 9093, 0, 0)]>: Connection complete.
+2025-03-07 12:58:28,429 - INFO - Sent: Workload ID: 4472 | Type: batch | Criticality: business_critical | Pattern: event_driven | Resource: io_intensive | Partition: 1 | Offset: 10
+2025-03-07 12:58:31,126 - INFO - Sent: Workload ID: 9502 | Type: real_time | Criticality: mission_critical | Pattern: batch | Resource: io_intensive | Partition: 1 | Offset: 11
+2025-03-07 12:58:31,572 - INFO - Sent: Workload ID: 4119 | Type: batch | Criticality: business_critical | Pattern: stream_processing | Resource: hybrid | Partition: 1 | Offset: 12
+2025-03-07 12:58:33,619 - INFO - Sent: Workload ID: 8398 | Type: near_real_time | Criticality: non_critical | Pattern: event_driven | Resource: hybrid | Partition: 1 | Offset: 13
+2025-03-07 12:58:34,447 - INFO - Sent: Workload ID: 4029 | Type: batch | Criticality: non_critical | Pattern: event_driven | Resource: io_intensive | Partition: 1 | Offset: 14
+2025-03-07 12:58:39,247 - INFO - Sent: Workload ID: 8652 | Type: near_real_time | Criticality: mission_critical | Pattern: stream_processing | Resource: compute_intensive | Partition: 0 | Offset: 13
+2025-03-07 12:58:39,766 - INFO - Sent: Workload ID: 6512 | Type: batch | Criticality: mission_critical | Pattern: batch | Resource: io_intensive | Partition: 2 | Offset: 13
+2025-03-07 12:58:43,683 - INFO - Sent: Workload ID: 3134 | Type: real_time | Criticality: non_critical | Pattern: event_driven | Resource: hybrid | Partition: 2 | Offset: 14
+2025-03-07 12:58:43,908 - INFO - Sent: Workload ID: 6613 | Type: near_real_time | Criticality: mission_critical | Pattern: batch | Resource: hybrid | Partition: 0 | Offset: 14
+2025-03-07 12:58:45,138 - INFO - Sent: Workload ID: 8013 | Type: batch | Criticality: mission_critical | Pattern: event_driven | Resource: io_intensive | Partition: 0 | Offset: 15
+2025-03-07 12:58:48,136 - INFO - Sent: Workload ID: 4850 | Type: near_real_time | Criticality: non_critical | Pattern: event_driven | Resource: io_intensive | Partition: 1 | Offset: 15
+2025-03-07 12:58:49,558 - INFO - Sent: Workload ID: 6486 | Type: batch | Criticality: business_critical | Pattern: event_driven | Resource: hybrid | Partition: 0 | Offset: 16
+2025-03-07 12:58:53,532 - INFO - Sent: Workload ID: 2362 | Type: real_time | Criticality: mission_critical | Pattern: batch | Resource: io_intensive | Partition: 0 | Offset: 17
+2025-03-07 12:58:53,933 - INFO - Sent: Workload ID: 7049 | Type: real_time | Criticality: mission_critical | Pattern: event_driven | Resource: compute_intensive | Partition: 0 | Offset: 18
+2025-03-07 12:58:54,309 - INFO - Sent: Workload ID: 4292 | Type: near_real_time | Criticality: non_critical | Pattern: stream_processing | Resource: io_intensive | Partition: 0 | Offset: 19
+2025-03-07 12:58:55,493 - INFO - Sent: Workload ID: 1794 | Type: near_real_time | Criticality: non_critical | Pattern: event_driven | Resource: io_intensive | Partition: 0 | Offset: 20
+2025-03-07 12:58:56,076 - INFO - Sent: Workload ID: 8364 | Type: near_real_time | Criticality: non_critical | Pattern: event_driven | Resource: io_intensive | Partition: 2 | Offset: 15
+2025-03-07 12:58:56,954 - INFO - Sent: Workload ID: 6976 | Type: near_real_time | Criticality: non_critical | Pattern: stream_processing | Resource: compute_intensive | Partition: 2 | Offset: 16
+2025-03-07 12:58:58,232 - INFO - Sent: Workload ID: 1986 | Type: near_real_time | Criticality: non_critical | Pattern: event_driven | Resource: io_intensive | Partition: 1 | Offset: 16
+2025-03-07 12:58:59,321 - INFO - Sent: Workload ID: 9792 | Type: near_real_time | Criticality: mission_critical | Pattern: batch | Resource: hybrid | Partition: 0 | Offset: 21
+2025-03-07 12:58:59,874 - INFO - Sent: Workload ID: 5372 | Type: real_time | Criticality: business_critical | Pattern: event_driven | Resource: io_intensive | Partition: 0 | Offset: 22
+2025-03-07 12:59:00,339 - INFO - Sent: Workload ID: 6450 | Type: near_real_time | Criticality: non_critical | Pattern: batch | Resource: hybrid | Partition: 0 | Offset: 23
+2025-03-07 12:59:01,400 - INFO - Sent: Workload ID: 1102 | Type: real_time | Criticality: business_critical | Pattern: stream_processing | Resource: io_intensive | Partition: 1 | Offset: 17
+2025-03-07 12:59:01,817 - INFO - Sent: Workload ID: 8949 | Type: real_time | Criticality: business_critical | Pattern: stream_processing | Resource: hybrid | Partition: 2 | Offset: 17
+2025-03-07 12:59:02,019 - INFO - Sent: Workload ID: 4274 | Type: real_time | Criticality: mission_critical | Pattern: batch | Resource: hybrid | Partition: 2 | Offset: 18
+2025-03-07 12:59:02,408 - INFO - Sent: Workload ID: 4327 | Type: real_time | Criticality: mission_critical | Pattern: batch | Resource: compute_intensive | Partition: 0 | Offset: 24
+2025-03-07 12:59:02,774 - INFO - Sent: Workload ID: 1462 | Type: near_real_time | Criticality: business_critical | Pattern: batch | Resource: io_intensive | Partition: 0 | Offset: 25
+2025-03-07 12:59:04,002 - INFO - Sent: Workload ID: 4566 | Type: near_real_time | Criticality: business_critical | Pattern: batch | Resource: compute_intensive | Partition: 2 | Offset: 19
+2025-03-07 12:59:04,867 - INFO - Sent: Workload ID: 1055 | Type: batch | Criticality: business_critical | Pattern: stream_processing | Resource: compute_intensive | Partition: 1 | Offset: 18
+2025-03-07 12:59:08,981 - INFO - Sent: Workload ID: 3932 | Type: near_real_time | Criticality: non_critical | Pattern: stream_processing | Resource: hybrid | Partition: 0 | Offset: 26
+2025-03-07 12:59:09,839 - INFO - Sent: Workload ID: 6413 | Type: real_time | Criticality: mission_critical | Pattern: stream_processing | Resource: compute_intensive | Partition: 2 | Offset: 20
+2025-03-07 12:59:10,259 - INFO - Sent: Workload ID: 8034 | Type: near_real_time | Criticality: non_critical | Pattern: batch | Resource: compute_intensive | Partition: 1 | Offset: 19
+2025-03-07 12:59:12,062 - INFO - Sent: Workload ID: 3024 | Type: near_real_time | Criticality: mission_critical | Pattern: batch | Resource: compute_intensive | Partition: 1 | Offset: 20
+2025-03-07 12:59:13,283 - INFO - Sent: Workload ID: 1989 | Type: near_real_time | Criticality: mission_critical | Pattern: stream_processing | Resource: compute_intensive | Partition: 0 | Offset: 27
+2025-03-07 12:59:14,054 - INFO - Sent: Workload ID: 3406 | Type: batch | Criticality: mission_critical | Pattern: event_driven | Resource: io_intensive | Partition: 1 | Offset: 21
+2025-03-07 12:59:16,260 - INFO - Sent: Workload ID: 3656 | Type: batch | Criticality: non_critical | Pattern: stream_processing | Resource: compute_intensive | Partition: 1 | Offset: 22
+2025-03-07 12:59:20,248 - INFO - Sent: Workload ID: 3986 | Type: batch | Criticality: business_critical | Pattern: batch | Resource: hybrid | Partition: 0 | Offset: 28
+2025-03-07 12:59:22,600 - INFO - Sent: Workload ID: 5228 | Type: batch | Criticality: non_critical | Pattern: batch | Resource: hybrid | Partition: 0 | Offset: 29
+2025-03-07 12:59:26,002 - INFO - Sent: Workload ID: 6313 | Type: real_time | Criticality: non_critical | Pattern: stream_processing | Resource: hybrid | Partition: 2 | Offset: 21
+2025-03-07 12:59:26,310 - INFO - Sent: Workload ID: 5500 | Type: real_time | Criticality: mission_critical | Pattern: stream_processing | Resource: hybrid | Partition: 2 | Offset: 22
+2025-03-07 12:59:26,697 - INFO - Sent: Workload ID: 4961 | Type: real_time | Criticality: non_critical | Pattern: stream_processing | Resource: io_intensive | Partition: 2 | Offset: 23
+2025-03-07 12:59:27,058 - INFO - Sent: Workload ID: 6501 | Type: batch | Criticality: non_critical | Pattern: batch | Resource: hybrid | Partition: 2 | Offset: 24
+2025-03-07 12:59:29,330 - INFO - Sent: Workload ID: 5968 | Type: near_real_time | Criticality: business_critical | Pattern: batch | Resource: hybrid | Partition: 0 | Offset: 30
+2025-03-07 12:59:30,078 - INFO - Sent: Workload ID: 3410 | Type: real_time | Criticality: mission_critical | Pattern: event_driven | Resource: compute_intensive | Partition: 2 | Offset: 25
+2025-03-07 12:59:30,252 - INFO - Sent: Workload ID: 8250 | Type: real_time | Criticality: mission_critical | Pattern: batch | Resource: compute_intensive | Partition: 1 | Offset: 23
+2025-03-07 12:59:30,558 - INFO - Sent: Workload ID: 6485 | Type: batch | Criticality: business_critical | Pattern: batch | Resource: io_intensive | Partition: 1 | Offset: 24
+2025-03-07 12:59:33,925 - INFO - Sent: Workload ID: 6242 | Type: batch | Criticality: mission_critical | Pattern: event_driven | Resource: io_intensive | Partition: 1 | Offset: 25
+2025-03-07 12:59:38,986 - INFO - Sent: Workload ID: 9868 | Type: batch | Criticality: non_critical | Pattern: stream_processing | Resource: compute_intensive | Partition: 0 | Offset: 31
+2025-03-07 12:59:44,375 - INFO - Sent: Workload ID: 4558 | Type: near_real_time | Criticality: non_critical | Pattern: batch | Resource: compute_intensive | Partition: 0 | Offset: 32
+2025-03-07 12:59:44,378 - INFO - ===== SUMMARY: Sent 50 messages at 0.65 msgs/sec =====
+2025-03-07 12:59:45,970 - INFO - Sent: Workload ID: 4003 | Type: near_real_time | Criticality: non_critical | Pattern: stream_processing | Resource: compute_intensive | Partition: 1 | Offset: 26
+2025-03-07 12:59:47,134 - INFO - Sent: Workload ID: 6501 | Type: batch | Criticality: business_critical | Pattern: event_driven | Resource: io_intensive | Partition: 1 | Offset: 27

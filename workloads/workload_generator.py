@@ -17,10 +17,10 @@ RESOURCE_INTENSITY = [
     "compute_intensive", "io_intensive", "hybrid"
 ]
 
-# producer = KafkaProducer(
-#     bootstrap_servers=["localhost:9092"],
-#     value_serializer=lambda v: json.dumps(v).encode("utf-8")
-# )
+producer = KafkaProducer(
+    bootstrap_servers=["localhost:9092"],
+    value_serializer=lambda v: json.dumps(v).encode("utf-8")
+)
 
 def generate_workload():
     return {
@@ -44,6 +44,6 @@ def generate_workload():
 
 while True:
     workload = generate_workload()
-    # producer.send("ai_workloads", value=workload)
+    producer.send("ai_workloads", value=workload)
     print(f"Sent: {workload}")
     time.sleep(1)
