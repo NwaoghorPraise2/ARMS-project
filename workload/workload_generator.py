@@ -351,8 +351,16 @@ if __name__ == "__main__":
     
     # Generate a full recovery scenario
     print("Generating a week-long recovery scenario...")
-    recovery_scenario = generator.generate_recovery_scenario(days=365, workloads_per_day=5000)
+    recovery_scenario = generator.generate_recovery_scenario(days=3, workloads_per_day=5)
     print(f"Generated {len(recovery_scenario)} workloads in the recovery scenario")
     
     # Save to file
     generator.save_workloads_to_file(recovery_scenario, "arms_recovery_scenario.json")
+
+
+
+
+
+
+
+   

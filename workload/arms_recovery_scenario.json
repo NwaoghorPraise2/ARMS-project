@@ -1,0 +1,359 @@
+[
+  {
+    "workload_id": "833b6d8e-4489-4c14-9202-f12763575aed",
+    "name": "near_real_time_batch_workload_io_intensive_workload_e4905e8b",
+    "timestamp": "2025-03-04T00:05:46.804222",
+    "taxonomy": {
+      "latency_sensitivity": "near_real_time",
+      "data_criticality": "non_critical",
+      "processing_pattern": "batch_workload",
+      "resource_intensity": "io_intensive"
+    },
+    "model": {
+      "type": "classification",
+      "complexity": 2
+    },
+    "parameters": {
+      "delay_tolerance_ms": 37892.71,
+      "message_loss_tolerance": 0.05,
+      "batch_size": 8575,
+      "avg_processing_time_ms": 16411.68,
+      "resource_requirements": {
+        "cpu_percent": 35.23,
+        "memory_percent": 45.97,
+        "io_percent": 79.35
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "15fbb52f-95d9-468b-9847-978e79c31517",
+    "name": "fraud_detection_c4bb385b",
+    "timestamp": "2025-03-04T06:52:04.804222",
+    "taxonomy": {
+      "latency_sensitivity": "near_real_time",
+      "data_criticality": "business_critical",
+      "processing_pattern": "event_driven",
+      "resource_intensity": "compute_intensive"
+    },
+    "model": {
+      "type": "classification",
+      "complexity": 1
+    },
+    "parameters": {
+      "delay_tolerance_ms": 55816.82,
+      "message_loss_tolerance": 0.01,
+      "batch_size": 1,
+      "avg_processing_time_ms": 26401.28,
+      "resource_requirements": {
+        "cpu_percent": 91.97,
+        "memory_percent": 54.95,
+        "io_percent": 16.15
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "018566be-7140-422d-8527-f41f4fc2309e",
+    "name": "real_time_event_driven_io_intensive_workload_aa325107",
+    "timestamp": "2025-03-04T10:09:40.804222",
+    "taxonomy": {
+      "latency_sensitivity": "real_time",
+      "data_criticality": "business_critical",
+      "processing_pattern": "event_driven",
+      "resource_intensity": "io_intensive"
+    },
+    "model": {
+      "type": "recommendation",
+      "complexity": 4
+    },
+    "parameters": {
+      "delay_tolerance_ms": 399.4,
+      "message_loss_tolerance": 0.01,
+      "batch_size": 1,
+      "avg_processing_time_ms": 380.33,
+      "resource_requirements": {
+        "cpu_percent": 26.58,
+        "memory_percent": 69.93,
+        "io_percent": 82.74
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "547f8b60-7392-437e-b375-53f0b8901ec3",
+    "name": "language_translation_46bfd24e",
+    "timestamp": "2025-03-04T20:10:29.804222",
+    "taxonomy": {
+      "latency_sensitivity": "near_real_time",
+      "data_criticality": "business_critical",
+      "processing_pattern": "stream_processing",
+      "resource_intensity": "io_intensive"
+    },
+    "model": {
+      "type": "classification",
+      "complexity": 3
+    },
+    "parameters": {
+      "delay_tolerance_ms": 33640.33,
+      "message_loss_tolerance": 0.01,
+      "batch_size": 94,
+      "avg_processing_time_ms": 3790.79,
+      "resource_requirements": {
+        "cpu_percent": 40.41,
+        "memory_percent": 43.44,
+        "io_percent": 92.12
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "cfff5de5-5e23-4ce2-bbd7-ce17cb26a7ee",
+    "name": "near_real_time_event_driven_io_intensive_workload_1a302e83",
+    "timestamp": "2025-03-05T00:28:51.804222",
+    "taxonomy": {
+      "latency_sensitivity": "near_real_time",
+      "data_criticality": "business_critical",
+      "processing_pattern": "event_driven",
+      "resource_intensity": "io_intensive"
+    },
+    "model": {
+      "type": "computer_vision",
+      "complexity": 6
+    },
+    "parameters": {
+      "delay_tolerance_ms": 7446.87,
+      "message_loss_tolerance": 0.01,
+      "batch_size": 1,
+      "avg_processing_time_ms": 8717.08,
+      "resource_requirements": {
+        "cpu_percent": 25.75,
+        "memory_percent": 56.09,
+        "io_percent": 73.5
+      }
+    },
+    "failure": {
+      "occurred": true,
+      "type": "queue_overflow",
+      "timestamp": "2025-03-05T00:28:56.652304",
+      "recovery_time_ms": 25244.8,
+      "messages_affected": 1,
+      "resource_impact": {
+        "cpu_percent": 16.65,
+        "memory_percent": 24.57,
+        "io_percent": 20.69
+      }
+    }
+  },
+  {
+    "workload_id": "c09b6766-7add-464a-b9eb-d5a7f359545e",
+    "name": "batch_stream_processing_hybrid_workload_e4fe77b7",
+    "timestamp": "2025-03-05T02:55:59.804222",
+    "taxonomy": {
+      "latency_sensitivity": "batch",
+      "data_criticality": "business_critical",
+      "processing_pattern": "stream_processing",
+      "resource_intensity": "hybrid"
+    },
+    "model": {
+      "type": "computer_vision",
+      "complexity": 10
+    },
+    "parameters": {
+      "delay_tolerance_ms": 734051.1,
+      "message_loss_tolerance": 0.01,
+      "batch_size": 18,
+      "avg_processing_time_ms": 125883.0,
+      "resource_requirements": {
+        "cpu_percent": 62.93,
+        "memory_percent": 62.71,
+        "io_percent": 64.01
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "2c809695-63e6-4854-a3ad-77d38ab322e4",
+    "name": "near_real_time_event_driven_io_intensive_workload_3485b1bc",
+    "timestamp": "2025-03-05T14:28:57.804222",
+    "taxonomy": {
+      "latency_sensitivity": "near_real_time",
+      "data_criticality": "non_critical",
+      "processing_pattern": "event_driven",
+      "resource_intensity": "io_intensive"
+    },
+    "model": {
+      "type": "nlp",
+      "complexity": 8
+    },
+    "parameters": {
+      "delay_tolerance_ms": 57897.41,
+      "message_loss_tolerance": 0.05,
+      "batch_size": 1,
+      "avg_processing_time_ms": 9695.63,
+      "resource_requirements": {
+        "cpu_percent": 47.87,
+        "memory_percent": 62.66,
+        "io_percent": 87.25
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "745c4293-f354-4f0a-87e5-6b006049a5d2",
+    "name": "real_time_stream_processing_compute_intensive_workload_c889eaad",
+    "timestamp": "2025-03-05T19:42:31.804222",
+    "taxonomy": {
+      "latency_sensitivity": "real_time",
+      "data_criticality": "business_critical",
+      "processing_pattern": "stream_processing",
+      "resource_intensity": "compute_intensive"
+    },
+    "model": {
+      "type": "classification",
+      "complexity": 1
+    },
+    "parameters": {
+      "delay_tolerance_ms": 70.99,
+      "message_loss_tolerance": 0.01,
+      "batch_size": 66,
+      "avg_processing_time_ms": 261.94,
+      "resource_requirements": {
+        "cpu_percent": 75.72,
+        "memory_percent": 57.16,
+        "io_percent": 27.19
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "837c3402-97fb-484e-a896-3211794ccff9",
+    "name": "real_time_stream_processing_hybrid_workload_b9dcee3d",
+    "timestamp": "2025-03-06T02:23:18.804222",
+    "taxonomy": {
+      "latency_sensitivity": "real_time",
+      "data_criticality": "business_critical",
+      "processing_pattern": "stream_processing",
+      "resource_intensity": "hybrid"
+    },
+    "model": {
+      "type": "recommendation",
+      "complexity": 8
+    },
+    "parameters": {
+      "delay_tolerance_ms": 9.32,
+      "message_loss_tolerance": 0.01,
+      "batch_size": 65,
+      "avg_processing_time_ms": 139.95,
+      "resource_requirements": {
+        "cpu_percent": 66.89,
+        "memory_percent": 53.0,
+        "io_percent": 66.13
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "b83cd487-138b-4cfa-9140-8a6b123070d4",
+    "name": "batch_stream_processing_io_intensive_workload_dd629d19",
+    "timestamp": "2025-03-06T04:56:04.804222",
+    "taxonomy": {
+      "latency_sensitivity": "batch",
+      "data_criticality": "mission_critical",
+      "processing_pattern": "stream_processing",
+      "resource_intensity": "io_intensive"
+    },
+    "model": {
+      "type": "regression",
+      "complexity": 2
+    },
+    "parameters": {
+      "delay_tolerance_ms": 2126199.9,
+      "message_loss_tolerance": 0.0,
+      "batch_size": 57,
+      "avg_processing_time_ms": 500137.69,
+      "resource_requirements": {
+        "cpu_percent": 48.04,
+        "memory_percent": 46.13,
+        "io_percent": 87.9
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "11519341-24a3-4414-8ff9-c5e9ff940c47",
+    "name": "near_real_time_event_driven_hybrid_workload_987354c7",
+    "timestamp": "2025-03-06T16:09:12.804222",
+    "taxonomy": {
+      "latency_sensitivity": "near_real_time",
+      "data_criticality": "mission_critical",
+      "processing_pattern": "event_driven",
+      "resource_intensity": "hybrid"
+    },
+    "model": {
+      "type": "classification",
+      "complexity": 5
+    },
+    "parameters": {
+      "delay_tolerance_ms": 47260.17,
+      "message_loss_tolerance": 0.0,
+      "batch_size": 1,
+      "avg_processing_time_ms": 20025.2,
+      "resource_requirements": {
+        "cpu_percent": 63.65,
+        "memory_percent": 62.69,
+        "io_percent": 78.72
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  },
+  {
+    "workload_id": "6bf139de-8d8d-4582-93b9-9eaec8aab714",
+    "name": "near_real_time_stream_processing_compute_intensive_workload_9499c8d4",
+    "timestamp": "2025-03-06T17:43:55.804222",
+    "taxonomy": {
+      "latency_sensitivity": "near_real_time",
+      "data_criticality": "business_critical",
+      "processing_pattern": "stream_processing",
+      "resource_intensity": "compute_intensive"
+    },
+    "model": {
+      "type": "nlp",
+      "complexity": 4
+    },
+    "parameters": {
+      "delay_tolerance_ms": 30668.17,
+      "message_loss_tolerance": 0.01,
+      "batch_size": 86,
+      "avg_processing_time_ms": 2521.38,
+      "resource_requirements": {
+        "cpu_percent": 73.94,
+        "memory_percent": 58.82,
+        "io_percent": 11.6
+      }
+    },
+    "failure": {
+      "occurred": false
+    }
+  }
+]
