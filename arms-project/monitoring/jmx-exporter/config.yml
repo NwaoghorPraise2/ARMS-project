@@ -1,0 +1,11 @@
+---
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+whitelistObjectNames: ["kafka.server:*", "kafka.network:*", "kafka.log:*", "java.lang:*"]
+rules:
+  - pattern: "kafka.server<type=(.+), name=(.+)><>Value"
+    name: kafka_server__
+  - pattern: "kafka.network<type=(.+), name=(.+)><>Value"
+    name: kafka_network__
+  - pattern: "java.lang<type=(.+), name=(.+)><>Value"
+    name: java_lang__

@@ -1,0 +1,259 @@
+services:
+  # ZooKeeper for Kafka coordination
+  zookeeper:
+    image: confluentinc/cp-zookeeper:${ZOOKEEPER_VERSION}
+    hostname: zookeeper
+    container_name: zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - ./data/zookeeper/data:/var/lib/zookeeper/data
+      - ./data/zookeeper/log:/var/lib/zookeeper/log
+    networks:
+      - arms-network
+
+  # Kafka broker 1
+  kafka1:
+    image: confluentinc/cp-kafka:${KAFKA_VERSION}
+    hostname: kafka1
+    container_name: kafka1
+    depends_on:
+      - zookeeper
+    ports:
+      - '9092:9092'
+      - '9991:9991'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_JMX_PORT: 9991
+      KAFKA_JMX_HOSTNAME: kafka1
+    volumes:
+      - ./data/kafka1:/var/lib/kafka/data
+    networks:
+      - arms-network
+
+  # Kafka broker 2
+  kafka2:
+    image: confluentinc/cp-kafka:${KAFKA_VERSION}
+    hostname: kafka2
+    container_name: kafka2
+    depends_on:
+      - zookeeper
+    ports:
+      - '9093:9093'
+      - '9992:9992'
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:29093,PLAINTEXT_HOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_JMX_PORT: 9992
+      KAFKA_JMX_HOSTNAME: kafka2
+    volumes:
+      - ./data/kafka2:/var/lib/kafka/data
+    networks:
+      - arms-network
+
+  # Kafka broker 3
+  kafka3:
+    image: confluentinc/cp-kafka:${KAFKA_VERSION}
+    hostname: kafka3
+    container_name: kafka3
+    depends_on:
+      - zookeeper
+    ports:
+      - '9094:9094'
+      - '9993:9993'
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:29094,PLAINTEXT_HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_DELETE_TOPIC_ENABLE: 'true'
+      KAFKA_JMX_PORT: 9993
+      KAFKA_JMX_HOSTNAME: kafka3
+    volumes:
+      - ./data/kafka3:/var/lib/kafka/data
+    networks:
+      - arms-network
+
+  # JMX Exporter for Kafka metrics
+  jmx-exporter1:
+    image: bitnami/jmx-exporter:${JMX_EXPORTER_VERSION}
+    container_name: jmx-exporter1
+    ports:
+      - '5555:5555'
+    command: 5555 kafka1:9991
+    volumes:
+      - ./monitoring/jmx-exporter/config.yml:/opt/bitnami/jmx-exporter/config.yml
+    networks:
+      - arms-network
+    depends_on:
+      - kafka1
+
+  jmx-exporter2:
+    image: bitnami/jmx-exporter:${JMX_EXPORTER_VERSION}
+    container_name: jmx-exporter2
+    ports:
+      - '5556:5556'
+    command: 5556 kafka2:9992
+    volumes:
+      - ./monitoring/jmx-exporter/config.yml:/opt/bitnami/jmx-exporter/config.yml
+    networks:
+      - arms-network
+    depends_on:
+      - kafka2
+
+  jmx-exporter3:
+    image: bitnami/jmx-exporter:${JMX_EXPORTER_VERSION}
+    container_name: jmx-exporter3
+    ports:
+      - '5557:5557'
+    command: 5557 kafka3:9993
+    volumes:
+      - ./monitoring/jmx-exporter/config.yml:/opt/bitnami/jmx-exporter/config.yml
+    networks:
+      - arms-network
+    depends_on:
+      - kafka3
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION}
+    container_name: prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - arms-network
+    depends_on:
+      - jmx-exporter1
+      - jmx-exporter2
+      - jmx-exporter3
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - arms-network
+    depends_on:
+      - prometheus
+
+  # ARMS Metric Collector
+  metric-collector:
+    build:
+      context: ./classification
+      dockerfile: Dockerfile.metric-collector
+    container_name: metric-collector
+    volumes:
+      - ./classification:/app
+      - ./data/metrics:/app/data
+    environment:
+      - PROMETHEUS_URL=http://prometheus:9090
+      - COLLECTION_INTERVAL=15
+    networks:
+      - arms-network
+    depends_on:
+      - prometheus
+
+  # ARMS Classifier
+  classifier:
+    build:
+      context: ./classification
+      dockerfile: Dockerfile.classifier
+    container_name: classifier
+    volumes:
+      - ./classification:/app
+      - ./data/models:/app/models
+      - ./data/metrics:/app/data
+    environment:
+      - MODEL_PATH=/app/models/workload_classifier.pkl
+    networks:
+      - arms-network
+    depends_on:
+      - metric-collector
+
+  # ARMS Strategy Selector
+  strategy-selector:
+    build:
+      context: ./strategy
+      dockerfile: Dockerfile
+    container_name: strategy-selector
+    volumes:
+      - ./strategy:/app
+      - ./data/models:/app/models
+    environment:
+      - TAXONOMY_PATH=/app/taxonomy.py
+    networks:
+      - arms-network
+    depends_on:
+      - classifier
+
+  # ARMS API
+  arms-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: arms-api
+    ports:
+      - '5005:5005'
+    volumes:
+      - ./api:/app
+      - ./data/models:/app/models
+    environment:
+      - CLASSIFIER_HOST=classifier
+      - STRATEGY_SELECTOR_HOST=strategy-selector
+    networks:
+      - arms-network
+    depends_on:
+      - classifier
+      - strategy-selector
+
+  # Workload Generator
+  workload-generator:
+    build:
+      context: ./scripts
+      dockerfile: Dockerfile.generator
+    container_name: workload-generator
+    volumes:
+      - ./scripts:/app
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka1:29092,kafka2:29093,kafka3:29094
+    networks:
+      - arms-network
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+
+networks:
+  arms-network:
+    driver: bridge
