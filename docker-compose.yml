@@ -1,68 +1,281 @@
 services:
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
+  # ZooKeeper ensemble
+  zookeeper-1:
+    image: confluentinc/cp-zookeeper:7.0.1
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+    volumes:
+      - zk1-data:/var/lib/zookeeper/data
+      - zk1-log:/var/lib/zookeeper/log
     networks:
-      - arms-network
+      - kafka-net
 
-  kafka1:
-    image: confluentinc/cp-kafka:7.5.0
+  zookeeper-2:
+    image: confluentinc/cp-zookeeper:7.0.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SERVER_ID: 2
+      ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+    volumes:
+      - zk2-data:/var/lib/zookeeper/data
+      - zk2-log:/var/lib/zookeeper/log
+    networks:
+      - kafka-net
+
+  zookeeper-3:
+    image: confluentinc/cp-zookeeper:7.0.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SERVER_ID: 3
+      ZOOKEEPER_SERVERS: zookeeper-1:2888:3888;zookeeper-2:2888:3888;zookeeper-3:2888:3888
+    volumes:
+      - zk3-data:/var/lib/zookeeper/data
+      - zk3-log:/var/lib/zookeeper/log
+    networks:
+      - kafka-net
+
+  # Kafka brokers
+  kafka-1:
+    image: confluentinc/cp-kafka:7.0.1
     depends_on:
-      - zookeeper
-    ports:
-      - '9092:9092'
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
-      KAFKA_NUM_PARTITIONS: 3
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: localhost
+    volumes:
+      - kafka1-data:/var/lib/kafka/data
     networks:
-      - arms-network
+      - kafka-net
 
-  kafka2:
-    image: confluentinc/cp-kafka:7.5.0
+  kafka-2:
+    image: confluentinc/cp-kafka:7.0.1
     depends_on:
-      - zookeeper
-    ports:
-      - '9093:9092'
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
     environment:
       KAFKA_BROKER_ID: 2
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:29093,PLAINTEXT_HOST://localhost:9093
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
-      KAFKA_NUM_PARTITIONS: 3
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-    networks:
-      - arms-network
-
-  prometheus:
-    image: prom/prometheus:latest
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: localhost
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - kafka2-data:/var/lib/kafka/data
+    networks:
+      - kafka-net
+
+  kafka-3:
+    image: confluentinc/cp-kafka:7.0.1
+    depends_on:
+      - zookeeper-1
+      - zookeeper-2
+      - zookeeper-3
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-1:2181,zookeeper-2:2181,zookeeper-3:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: localhost
+    volumes:
+      - kafka3-data:/var/lib/kafka/data
+    networks:
+      - kafka-net
+
+  # Monitoring infrastructure
+  prometheus:
+    image: prom/prometheus:v2.40.1
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - kafka-net
     ports:
       - '9090:9090'
-    depends_on:
-      - kafka1
-      - kafka2
-    networks:
-      - arms-network
 
   grafana:
-    image: grafana/grafana:latest
-    ports:
-      - '3000:3000'
+    image: grafana/grafana:9.2.2
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./infrastructure/monitoring/grafana-provisioning:/etc/grafana/provisioning
+      - grafana-storage:/var/lib/grafana
     depends_on:
       - prometheus
     networks:
-      - arms-network
+      - kafka-net
+    ports:
+      - '3000:3000'
+
+  jmx-exporter:
+    image: bitnami/jmx-exporter:0.17.0
+    networks:
+      - kafka-net
+    ports:
+      - '5556:5556'
+    command: 5556 /opt/jmx-exporter/config.yaml
+    volumes:
+      - ./infrastructure/monitoring/jmx-exporter-config.yaml:/opt/jmx-exporter/config.yaml
+
+  arms-monitor:
+    build:
+      context: ./src/monitor
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+      - jmx-exporter
+    networks:
+      - kafka-net
+    volumes:
+      - ./src:/app/src
+      - monitor-data:/app/data
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+      - JMX_EXPORTER_URL=http://jmx-exporter:5556/metrics
+
+  arms-classifier:
+    build:
+      context: ./src/classifier
+      dockerfile: Dockerfile
+    depends_on:
+      - arms-monitor
+    networks:
+      - kafka-net
+    volumes:
+      - ./src:/app/src
+      - classifier-data:/app/data
+      - ./models:/app/models
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+      - MODEL_PATH=/app/models/workload_classifier.joblib
+
+  arms-selector:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - arms-classifier
+    networks:
+      - kafka-net
+    volumes:
+      - ./src:/app/src
+      - selector-data:/app/data
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+
+  arms-orchestrator:
+    build:
+      context: ./src/orchestrator
+      dockerfile: Dockerfile
+    depends_on:
+      - arms-selector
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    networks:
+      - kafka-net
+    volumes:
+      - ./src:/app/src
+      - orchestrator-data:/app/data
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+    command: ['java', '-jar', 'app.jar', 'orchestrator']
+
+  # For explicit fault injection tests
+  fault-injector:
+    build:
+      context: ./src/orchestrator
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    networks:
+      - kafka-net
+    volumes:
+      - ./src:/app/src
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+    command: ['java', '-jar', 'app.jar', 'faultinjector']
+
+  # Workload generator
+  workload-generator:
+    build:
+      context: ./src/workloadgenerator
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    networks:
+      - kafka-net
+    volumes:
+      - ./src:/app/src
+      - ./experiments/workloads:/app/workloads
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+
+  # Experiment coordinator
+  experiment-coordinator:
+    build:
+      context: ./src/evaluator
+      dockerfile: Dockerfile
+    depends_on:
+      - arms-monitor
+      - arms-classifier
+      - arms-selector
+      - arms-orchestrator
+      - workload-generator
+      - fault-injector
+    networks:
+      - kafka-net
+    volumes:
+      - ./src:/app/src
+      - ./experiments:/app/experiments
+      - ./results:/app/results
+    environment:
+      - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+      - RESULTS_DIR=/app/results
+      - ANALYSIS_DIR=/app/experiments/analysis
 
 networks:
-  arms-network:
+  kafka-net:
     driver: bridge
+
+volumes:
+  zk1-data:
+  zk1-log:
+  zk2-data:
+  zk2-log:
+  zk3-data:
+  zk3-log:
+  kafka1-data:
+  kafka2-data:
+  kafka3-data:
+  prometheus-data:
+  grafana-storage:
+  monitor-data:
+  classifier-data:
+  selector-data:
+  orchestrator-data:

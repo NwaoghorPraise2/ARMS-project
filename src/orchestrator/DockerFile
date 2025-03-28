@@ -1,0 +1,12 @@
+FROM openjdk:11-jre-slim
+
+WORKDIR /app
+
+# Copy the compiled JAR file
+COPY target/arms-kafka-1.0-SNAPSHOT-jar-with-dependencies.jar app.jar
+
+# Set environment variables
+ENV JAVA_OPTS="-Xms512m -Xmx1024m"
+
+# Command to run the orchestrator service
+CMD ["java", "-jar", "app.jar", "orchestrator"]
