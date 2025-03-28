@@ -1,0 +1,30 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install build essentials for confluent-kafka
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    make \
+    librdkafka-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install core dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Kafka-specific dependencies with the necessary build tools now available
+RUN pip install --no-cache-dir confluent-kafka==1.8.2
+
+# Copy source code
+COPY src/ /app/src/
+
+# Create workloads directory
+RUN mkdir -p /app/workloads
+
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "-m", "src.workloadgenerator.workload_service"]

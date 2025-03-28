@@ -7,14 +7,13 @@ COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir confluent-kafka==1.8.2
 
 # Copy source code
-COPY . .
+COPY src/ /app/src/
 
-# Create workloads directory
-RUN mkdir -p /app/workloads
+# Create data directory
+RUN mkdir -p /app/data
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "-m", "src.workloadgenerator.workload_service"]
+CMD ["python", "-m", "src.selector.selector_service"]

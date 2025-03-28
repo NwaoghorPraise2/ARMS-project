@@ -2,6 +2,7 @@ services:
   # ZooKeeper ensemble
   zookeeper-1:
     image: confluentinc/cp-zookeeper:7.0.1
+    platform: linux/amd64
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -15,6 +16,7 @@ services:
 
   zookeeper-2:
     image: confluentinc/cp-zookeeper:7.0.1
+    platform: linux/amd64
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -28,6 +30,7 @@ services:
 
   zookeeper-3:
     image: confluentinc/cp-zookeeper:7.0.1
+    platform: linux/amd64
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -39,9 +42,10 @@ services:
     networks:
       - kafka-net
 
-  # Kafka brokers
+  # # Kafka brokers
   kafka-1:
     image: confluentinc/cp-kafka:7.0.1
+    platform: linux/amd64
     depends_on:
       - zookeeper-1
       - zookeeper-2
@@ -62,6 +66,7 @@ services:
 
   kafka-2:
     image: confluentinc/cp-kafka:7.0.1
+    platform: linux/amd64
     depends_on:
       - zookeeper-1
       - zookeeper-2
@@ -82,6 +87,7 @@ services:
 
   kafka-3:
     image: confluentinc/cp-kafka:7.0.1
+    platform: linux/amd64
     depends_on:
       - zookeeper-1
       - zookeeper-2
@@ -100,9 +106,10 @@ services:
     networks:
       - kafka-net
 
-  # Monitoring infrastructure
+  # # Monitoring infrastructure
   prometheus:
     image: prom/prometheus:v2.40.1
+    platform: linux/amd64
     volumes:
       - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -113,6 +120,7 @@ services:
 
   grafana:
     image: grafana/grafana:9.2.2
+    platform: linux/amd64
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -128,6 +136,7 @@ services:
 
   jmx-exporter:
     image: bitnami/jmx-exporter:0.17.0
+    platform: linux/amd64
     networks:
       - kafka-net
     ports:
@@ -136,10 +145,11 @@ services:
     volumes:
       - ./infrastructure/monitoring/jmx-exporter-config.yaml:/opt/jmx-exporter/config.yaml
 
+  # ARMS components
   arms-monitor:
     build:
-      context: ./src/monitor
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.monitor
     depends_on:
       - kafka-1
       - kafka-2
@@ -148,7 +158,6 @@ services:
     networks:
       - kafka-net
     volumes:
-      - ./src:/app/src
       - monitor-data:/app/data
     environment:
       - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
@@ -156,16 +165,14 @@ services:
 
   arms-classifier:
     build:
-      context: ./src/classifier
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.classifier
     depends_on:
       - arms-monitor
     networks:
       - kafka-net
     volumes:
-      - ./src:/app/src
       - classifier-data:/app/data
-      - ./models:/app/models
     environment:
       - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
       - MODEL_PATH=/app/models/workload_classifier.joblib
@@ -173,21 +180,20 @@ services:
   arms-selector:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: infrastructure/docker/Dockerfile.selector
     depends_on:
       - arms-classifier
     networks:
       - kafka-net
     volumes:
-      - ./src:/app/src
       - selector-data:/app/data
     environment:
       - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
 
   arms-orchestrator:
     build:
-      context: ./src/orchestrator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.orchestrator
     depends_on:
       - arms-selector
       - kafka-1
@@ -196,25 +202,22 @@ services:
     networks:
       - kafka-net
     volumes:
-      - ./src:/app/src
       - orchestrator-data:/app/data
     environment:
       - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
     command: ['java', '-jar', 'app.jar', 'orchestrator']
 
-  # For explicit fault injection tests
+  # # For explicit fault injection tests
   fault-injector:
     build:
-      context: ./src/orchestrator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.orchestrator
     depends_on:
       - kafka-1
       - kafka-2
       - kafka-3
     networks:
       - kafka-net
-    volumes:
-      - ./src:/app/src
     environment:
       - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
     command: ['java', '-jar', 'app.jar', 'faultinjector']
@@ -222,8 +225,8 @@ services:
   # Workload generator
   workload-generator:
     build:
-      context: ./src/workloadgenerator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.workloadgen
     depends_on:
       - kafka-1
       - kafka-2
@@ -231,7 +234,6 @@ services:
     networks:
       - kafka-net
     volumes:
-      - ./src:/app/src
       - ./experiments/workloads:/app/workloads
     environment:
       - BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
@@ -239,8 +241,8 @@ services:
   # Experiment coordinator
   experiment-coordinator:
     build:
-      context: ./src/evaluator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.coordinator
     depends_on:
       - arms-monitor
       - arms-classifier
@@ -251,7 +253,6 @@ services:
     networks:
       - kafka-net
     volumes:
-      - ./src:/app/src
       - ./experiments:/app/experiments
       - ./results:/app/results
     environment:

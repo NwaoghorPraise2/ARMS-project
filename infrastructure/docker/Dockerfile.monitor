@@ -5,15 +5,19 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install dependencies
+# Install core dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install monitoring-specific dependencies
+RUN pip install --no-cache-dir psutil requests prometheus-client
+
 # Copy source code
-COPY . .
+COPY src/ /app/src/
+COPY data/models/ /app/models/
 
 # Create data directory
 RUN mkdir -p /app/data
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "-m", "src.selector.selector_service"]
+CMD ["python", "-m", "src.monitor.monitor_service"]

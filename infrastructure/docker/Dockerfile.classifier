@@ -8,15 +8,16 @@ COPY requirements.txt .
 # Install core dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install monitoring-specific dependencies
-RUN pip install --no-cache-dir psutil requests prometheus-client
+# Install ML-specific dependencies
+RUN pip install --no-cache-dir scikit-learn==1.0.2 joblib==1.1.0
 
 # Copy source code
-COPY . .
+COPY src/ /app/src/
+COPY data/models/ /app/models/
 
-# Create data directory
+# Create directories for models
 RUN mkdir -p /app/data
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["python", "-m", "src.monitor.monitor_service"]
+CMD ["python", "-m", "src.classifier.classifier_service"]
