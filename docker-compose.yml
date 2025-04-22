@@ -57,6 +57,8 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      environment:
+      KAFKA_OPTS: '-XX:-UseContainerSupport'
       KAFKA_JMX_PORT: 9999
       KAFKA_JMX_HOSTNAME: localhost
     volumes:
@@ -79,6 +81,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_JMX_PORT: 9999
+      KAFKA_OPTS: '-XX:-UseContainerSupport'
       KAFKA_JMX_HOSTNAME: localhost
     volumes:
       - kafka2-data:/var/lib/kafka/data
@@ -100,6 +103,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
       KAFKA_JMX_PORT: 9999
+      KAFKA_OPTS: '-XX:-UseContainerSupport'
       KAFKA_JMX_HOSTNAME: localhost
     volumes:
       - kafka3-data:/var/lib/kafka/data
