@@ -1,180 +1,188 @@
-networks:
-  kafka-net:
-    driver: bridge
-
-volumes:
-  prometheus_data:
-  grafana_data:
-
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
-    ports:
-      - '2181:2181'
+    image: confluentinc/cp-zookeeper:7.3.2
+    platform: linux/arm64
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      - kafka-net
+    ports:
+      - '2181:2181'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'echo',
+          'ruok',
+          '|',
+          'nc',
+          'localhost',
+          '2181',
+          '|',
+          'grep',
+          'imok',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   kafka1:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka1
+    image: confluentinc/cp-kafka:7.3.2
+    platform: linux/arm64
+    hostname: kafka1
+    depends_on:
+      zookeeper:
+        condition: service_healthy
     ports:
       - '9092:9092'
-      - '9997:9997'
+      - '29092:29092'
+      - '9980:9980'
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_JMX_PORT: 9997
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_JMX_PORT: 9999
       KAFKA_JMX_HOSTNAME: kafka1
-      KAFKA_OPTS: '-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka1 -XX:-UseContainerSupport'
-    networks:
-      - kafka-net
-
-  kafka1-jmx-exporter:
-    image: bitnami/jmx-exporter:latest
-    container_name: kafka1-jmx-exporter
-    ports:
-      - '5557:5557'
-    environment:
-      - JMX_PORT=9997
-      - SERVICE_PORT=5557
-      - CONFIG_FILE=/etc/jmx_exporter/config.yml
+      KAFKA_HEAP_OPTS: '-Xmx1G -Xms512M'
+      KAFKA_LOG4J_ROOT_LOGLEVEL: 'INFO'
+      KAFKA_OPTS: '-javaagent:/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9980:/jmx_exporter/kafka.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka1'
     volumes:
-      - ./jmx_exporter_config.yml:/etc/jmx_exporter/config.yml
-    depends_on:
-      - kafka1
-    networks:
-      - kafka-net
+      - ./jmx_exporter:/jmx_exporter
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 512M
 
   kafka2:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka2
+    image: confluentinc/cp-kafka:7.3.2
+    platform: linux/arm64
+    hostname: kafka2
+    depends_on:
+      - kafka1
     ports:
       - '9093:9093'
-      - '9998:9998'
+      - '29093:29093'
+      - '9981:9981'
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:29093,PLAINTEXT_HOST://localhost:9093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9093,PLAINTEXT_HOST://localhost:29093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
       KAFKA_JMX_PORT: 9998
       KAFKA_JMX_HOSTNAME: kafka2
-      KAFKA_OPTS: '-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka2 -XX:-UseContainerSupport'
-    networks:
-      - kafka-net
-
-  kafka2-jmx-exporter:
-    image: bitnami/jmx-exporter:latest
-    container_name: kafka2-jmx-exporter
-    ports:
-      - '5558:5558'
-    environment:
-      - JMX_PORT=9998
-      - SERVICE_PORT=5558
-      - CONFIG_FILE=/etc/jmx_exporter/config.yml
+      KAFKA_HEAP_OPTS: '-Xmx1G -Xms512M'
+      KAFKA_LOG4J_ROOT_LOGLEVEL: 'INFO'
+      KAFKA_OPTS: '-javaagent:/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9981:/jmx_exporter/kafka.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka2'
     volumes:
-      - ./jmx_exporter_config.yml:/etc/jmx_exporter/config.yml
-    depends_on:
-      - kafka2
-    networks:
-      - kafka-net
+      - ./jmx_exporter:/jmx_exporter
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 512M
 
   kafka3:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka3
+    image: confluentinc/cp-kafka:7.3.2
+    platform: linux/arm64
+    hostname: kafka3
+    depends_on:
+      - kafka2
     ports:
       - '9094:9094'
-      - '9999:9999'
+      - '29094:29094'
+      - '9982:9982'
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:29094,PLAINTEXT_HOST://localhost:9094
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29094,PLAINTEXT_HOST://0.0.0.0:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      KAFKA_JMX_PORT: 9999
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,PLAINTEXT_HOST://0.0.0.0:29094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9094,PLAINTEXT_HOST://localhost:29094
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_JMX_PORT: 9997
       KAFKA_JMX_HOSTNAME: kafka3
-      KAFKA_OPTS: '-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka3 -XX:-UseContainerSupport'
-    networks:
-      - kafka-net
-
-  kafka3-jmx-exporter:
-    image: bitnami/jmx-exporter:latest
-    container_name: kafka3-jmx-exporter
-    ports:
-      - '5559:5559'
-    environment:
-      - JMX_PORT=9999
-      - SERVICE_PORT=5559
-      - CONFIG_FILE=/etc/jmx_exporter/config.yml
+      KAFKA_HEAP_OPTS: '-Xmx1G -Xms512M'
+      KAFKA_LOG4J_ROOT_LOGLEVEL: 'INFO'
+      KAFKA_OPTS: '-javaagent:/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9982:/jmx_exporter/kafka.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka3'
     volumes:
-      - ./jmx_exporter_config.yml:/etc/jmx_exporter/config.yml
-    depends_on:
-      - kafka3
-    networks:
-      - kafka-net
+      - ./jmx_exporter:/jmx_exporter
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 512M
 
   prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
+    image: prom/prometheus
+    platform: linux/arm64
     ports:
       - '9090:9090'
-    depends_on:
-      - kafka1-jmx-exporter
-      - kafka2-jmx-exporter
-      - kafka3-jmx-exporter
-    networks:
-      - kafka-net
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
+    image: grafana/grafana
+    platform: linux/arm64
     ports:
       - '3000:3000'
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
       - ./grafana/dashboards:/var/lib/grafana/dashboards
-      - grafana_data:/var/lib/grafana
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
+      - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
-    networks:
-      - kafka-net
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   node-exporter:
-    image: prom/node-exporter:latest
-    container_name: node-exporter
+    image: prom/node-exporter
+    platform: linux/arm64
     ports:
       - '9100:9100'
-    networks:
-      - kafka-net
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  workload-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile.workload-generator
+    container_name: workload-generator
+    ports:
+      - '8000:8000'
+    environment:
+      - BOOTSTRAP_SERVERS=kafka1:9092,kafka2:9093,kafka3:9094
+      - TOPIC=ai_workloads
+      - METRICS_PORT=8000
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+
+volumes:
+  grafana-data:

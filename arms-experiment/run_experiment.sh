@@ -27,32 +27,52 @@ echo -e "${YELLOW}Waiting for Kafka to initialise (30s)...${NC}"
 sleep 30
 
 ### Step 3: Kafka Topic Setup ###
-# echo -e "${YELLOW}Step 3: Creating Kafka topic 'ai_workloads'${NC}"
-# docker exec kafka1 kafka-topics.sh \
-#   --bootstrap-server localhost:9092 \
-#   --create \
-#   --replication-factor 1 \
-#   --partitions 6 \
-#   --topic ai_workloads || {
-#     echo -e "\033[0;31mFailed to create topic. It might already exist.\033[0m"
-#   }
+docker exec -it kafka1 kafka-topics --create --topic ai_workloads \
+  --bootstrap-server kafka1:9092 \
+  --replication-factor 3 \
+  --partitions 6 \
+  --config min.insync.replicas=2
 
 ### Step 4: Workload Generator ###
 echo -e "${YELLOW}Step 4: Starting workload generator${NC}"
 
 # Build the workload generator Docker image
-docker build -t workload-generator -f Dockerfile.workload-generator .
+
 
 # Run the workload generator
-docker run -d --rm --name workload-generator --network host \
-  workload-generator \
-  --bootstrap-servers localhost:9092 \
-  --workload rotation \
-  --cycles 1
+# docker exec kafka1 kafka-topics --create \
+#   --bootstrap-server kafka1:29092 \
+#   --replication-factor 1 \
+#   --partitions 6 \
+#   --topic ai_workloads || echo "Topic might already exist"
+
 
 ### Finish ###
 echo -e "${GREEN}ARMS Experiment Execution Started Successfully${NC}"
 
+
+echo -e "${YELLOW}Starting metrics collector...${NC}"
+python3 metric_collector.py --output all_metrics.csv --interval 15 --prometheus-url http://localhost:9090 &
+METRICS_PID=$!
+
+echo -e "${GREEN}Experiment setup complete!${NC}"
+echo -e "${GREEN}Grafana UI: http://localhost:3000 (admin/admin)${NC}"
+echo -e "${GREEN}Prometheus UI: http://localhost:9090${NC}"
+echo -e "${GREEN}Metrics are being collected to all_metrics.csv${NC}"
+echo -e ""
+echo -e "${YELLOW}Press Ctrl+C to stop the experiment${NC}"
+
+# Wait for user to stop the experiment
+function cleanup {
+  echo -e "${YELLOW}Stopping metrics collector...${NC}"
+  kill $METRICS_PID || true
+  echo -e "${GREEN}Experiment complete! Metrics have been saved to all_metrics.csv${NC}"
+}
+
+trap cleanup EXIT
+
+# Wait for user to stop
+wait $METRICS_PID
 
 # echo -e "${YELLOW}Step 5: Collecting metrics for statistical analysis${NC}"
 # echo -e "${YELLOW}Running workload for data collection...${NC}"

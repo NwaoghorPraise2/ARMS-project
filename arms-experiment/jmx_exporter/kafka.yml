@@ -1,0 +1,131 @@
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+rules:
+  # Message Throughput & Payload Size
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=MessagesInPerSec><>Count'
+    name: kafka_server_brokertopicmetrics_messagesin_total
+    help: 'Total messages received'
+    type: COUNTER
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=BytesInPerSec><>Count'
+    name: kafka_server_brokertopicmetrics_bytesin_total
+    help: 'Total bytes received'
+    type: COUNTER
+
+  # Request metrics
+  - pattern: 'kafka.network<type=RequestMetrics, name=TotalTimeMs, request=(.+)><>99thPercentile'
+    name: kafka_network_requestmetrics_totaltimems
+    help: 'Total request time 99th percentile'
+    type: GAUGE
+    labels:
+      request: '$1'
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=TotalProduceRequestsPerSec><>Count'
+    name: kafka_server_brokertopicmetrics_totalproducerequests_total
+    help: 'Total producer requests'
+    type: COUNTER
+
+  # JVM Memory metrics
+  - pattern: 'java.lang<type=Memory><HeapMemoryUsage>used'
+    name: java_lang_memory_heapmemoryusage_used
+    help: 'Current heap memory usage'
+    type: GAUGE
+
+  # JVM Thread metrics
+  - pattern: 'java.lang<type=Threading><>ThreadCount'
+    name: java_lang_threading_threadcount
+    help: 'Current thread count'
+    type: GAUGE
+
+  # Cluster health metrics
+  - pattern: 'kafka.server<type=ReplicaManager><>UnderReplicatedPartitions'
+    name: kafka_server_replicamanager_underreplicatedpartitions
+    help: 'Number of under-replicated partitions'
+    type: GAUGE
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=TotalFetchRequestsPerSec><>Count'
+    name: kafka_server_brokertopicmetrics_totalfetchrequests_total
+    help: 'Total fetch requests'
+    type: COUNTER
+
+  - pattern: 'kafka.server<type=KafkaRequestHandlerPool, name=RequestHandlerAvgIdlePercent><>OneMinuteRate'
+    name: kafka_server_requesthandlerpool_requesthandleravgidlepercent
+    help: 'Request handler idle time percentage'
+    type: GAUGE
+
+  - pattern: 'kafka.server<type=ReplicaManager><>PartitionCount'
+    name: kafka_server_replicamanager_partitioncount
+    help: 'Number of partitions on this broker'
+    type: GAUGE
+
+  - pattern: 'kafka.server<type=ReplicaManager><>LeaderCount'
+    name: kafka_server_replicamanager_leadercount
+    help: 'Number of partitions for which this broker is the leader'
+    type: GAUGE
+
+  # Additional metrics for workload characterization
+  - pattern: 'kafka.network<type=RequestMetrics, name=RequestQueueTimeMs, request=(.+)><>Mean'
+    name: kafka_network_requestmetrics_requestqueuetimems
+    help: 'Time spent in request queue'
+    type: GAUGE
+    labels:
+      request: '$1'
+
+  - pattern: 'kafka.network<type=RequestMetrics, name=LocalTimeMs, request=(.+)><>Mean'
+    name: kafka_network_requestmetrics_localtimems
+    help: 'Time the request spent being processed'
+    type: GAUGE
+    labels:
+      request: '$1'
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=BytesOutPerSec><>Count'
+    name: kafka_server_brokertopicmetrics_bytesout_total
+    help: 'Total bytes sent'
+    type: COUNTER
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=MessagesOutPerSec><>Count'
+    name: kafka_server_brokertopicmetrics_messagesout_total
+    help: 'Total messages sent'
+    type: COUNTER
+
+  # Producer/consumer metrics
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=ProduceMessageConversionsPerSec><>Count'
+    name: kafka_server_brokertopicmetrics_producemessageconversions_total
+    help: 'Produce message conversions'
+    type: COUNTER
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=FetchMessageConversionsPerSec><>Count'
+    name: kafka_server_brokertopicmetrics_fetchmessageconversions_total
+    help: 'Fetch message conversions'
+    type: COUNTER
+
+  # Rate metrics (useful for variance detection)
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=MessagesInPerSec><>OneMinuteRate'
+    name: kafka_server_brokertopicmetrics_messagesin_rate
+    help: 'Rate of messages received per second'
+    type: GAUGE
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=BytesInPerSec><>OneMinuteRate'
+    name: kafka_server_brokertopicmetrics_bytesin_rate
+    help: 'Rate of bytes received per second'
+    type: GAUGE
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=TotalProduceRequestsPerSec><>OneMinuteRate'
+    name: kafka_server_brokertopicmetrics_totalproducerequests_rate
+    help: 'Rate of producer requests per second'
+    type: GAUGE
+
+  # Topic-specific metrics
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=MessagesInPerSec, topic=(.+)><>OneMinuteRate'
+    name: kafka_server_topic_messagesin_rate
+    help: 'Messages in per second for topic'
+    type: GAUGE
+    labels:
+      topic: '$1'
+
+  - pattern: 'kafka.server<type=BrokerTopicMetrics, name=BytesInPerSec, topic=(.+)><>OneMinuteRate'
+    name: kafka_server_topic_bytesin_rate
+    help: 'Bytes in per second for topic'
+    type: GAUGE
+    labels:
+      topic: '$1'

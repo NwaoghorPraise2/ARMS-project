@@ -63,23 +63,37 @@ class WorkloadGenerator:
         """Connect to Kafka broker."""
         logger.info(f"Connecting to Kafka at {self.bootstrap_servers}")
         
-        # Configure Kafka producer with appropriate settings
+        # Configure Kafka producer with settings optimized for multi-broker setup
         conf = {
             'bootstrap.servers': self.bootstrap_servers,
             'client.id': 'workload-generator',
-            'acks': 'all',
-            'retries': 5,
-            'retry.backoff.ms': 500,
-            'linger.ms': 10,  # Batch messages for 10ms
-            'compression.type': 'lz4',  # Use LZ4 compression
+            'acks': 'all',              # 'all' is appropriate for multi-broker setup
+            'retries': 5,               
+            'retry.backoff.ms': 500,    
+            'linger.ms': 50,            # Batch messages for 50ms
+            'compression.type': 'lz4',
+            'message.timeout.ms': 30000,  # 30 seconds timeout
+            'socket.keepalive.enable': True,
+            'reconnect.backoff.ms': 1000,
+            'reconnect.backoff.max.ms': 10000,
+            'queue.buffering.max.messages': 100000,
+            'batch.size': 16384,
+            'max.in.flight.requests.per.connection': 5,
+            'request.required.acks': -1, # Wait for all in-sync replicas
+
+            'delivery.timeout.ms': 120000  # 2 minutes timeout for delivery
         }
         
-        self.producer = Producer(conf)
-        logger.info("Connected to Kafka")
-        
-        # Start Prometheus metrics server
-        start_http_server(self.metrics_port)
-        logger.info(f"Started Prometheus metrics server on port {self.metrics_port}")
+        try:
+            self.producer = Producer(conf)
+            logger.info("Connected to Kafka")
+            
+            # Start Prometheus metrics server
+            start_http_server(self.metrics_port)
+            logger.info(f"Started Prometheus metrics server on port {self.metrics_port}")
+        except Exception as e:
+            logger.error(f"Failed to connect to Kafka: {e}")
+            raise
     
     def log_metrics(self, workload_type, message_rate, payload_size, batch_size=0):
         """Log metrics to CSV file."""
@@ -265,7 +279,8 @@ class WorkloadGenerator:
         self.bytes_sent = 0
         
         end_time = time.time() + duration_seconds
-        message_rate = 1000  # 1000 messages per second
+        # With 3 brokers, we can handle more messages
+        message_rate = 1200  # Increased for multi-broker setup
         inter_message_delay = 1.0 / message_rate
         
         batch_counter = 0  # For logging purposes
@@ -273,7 +288,7 @@ class WorkloadGenerator:
         
         while time.time() < end_time and self.running:
             batch_start = time.time()
-            batch_size = min(50, int(message_rate / 20))  # Send in small batches for efficiency
+            batch_size = min(50, int(message_rate / 20))
             
             batch_payload_size = 0
             for _ in range(batch_size):
@@ -281,21 +296,38 @@ class WorkloadGenerator:
                 message_json = json.dumps(message)
                 batch_payload_size += len(message_json)
                 
-                self.producer.produce(
-                    self.topic_name,
-                    key=str(uuid.uuid4()),
-                    value=message_json.encode('utf-8'),
-                    callback=self.delivery_report
-                )
+                try:
+                    self.producer.produce(
+                        self.topic_name,
+                        key=str(uuid.uuid4()),
+                        value=message_json.encode('utf-8'),
+                        callback=self.delivery_report
+                    )
+                except BufferError:
+                    # If the local buffer is full, wait a bit and retry
+                    logger.warning("Local buffer full, waiting...")
+                    self.producer.poll(1)
+                    # Retry producing the message
+                    self.producer.produce(
+                        self.topic_name,
+                        key=str(uuid.uuid4()),
+                        value=message_json.encode('utf-8'),
+                        callback=self.delivery_report
+                    )
+            
+            # Poll to handle callbacks
+            self.producer.poll(0)
             
             # Flush every batch to ensure delivery
-            self.producer.flush(timeout=1.0)
+            remaining = self.producer.flush(timeout=5.0)
+            if remaining > 0:
+                logger.warning(f"{remaining} messages still in queue after flush")
             
             batch_counter += 1
             total_payload_size += batch_payload_size
             avg_payload_size = batch_payload_size / batch_size
             
-            # Log metrics every 10 batches (roughly every 25 seconds at 1000 msgs/sec)
+            # Log metrics every 10 batches
             if batch_counter % 10 == 0:
                 self.log_metrics(
                     workload_type="real_time",
@@ -322,15 +354,15 @@ class WorkloadGenerator:
         self.bytes_sent = 0
         
         end_time = time.time() + duration_seconds
-        batch_interval = 60  # Send a batch every 60 seconds
+        batch_interval = 90  # Interval between batches
         
         batch_id = 0
         
         while time.time() < end_time and self.running:
             batch_start = time.time()
             
-            # Random batch size between 5,000 and 15,000 messages
-            batch_size = random.randint(5000, 15000)
+            # With 3 brokers, can handle larger batches
+            batch_size = random.randint(8000, 20000)
             logger.info(f"Sending batch #{batch_id} with {batch_size} messages")
             
             batch_payload_size = 0
@@ -339,19 +371,38 @@ class WorkloadGenerator:
                 message_json = json.dumps(message)
                 batch_payload_size += len(message_json)
                 
-                self.producer.produce(
-                    self.topic_name,
-                    key=f"batch-{batch_id}-{i}",
-                    value=message_json.encode('utf-8'),
-                    callback=self.delivery_report
-                )
+                try:
+                    self.producer.produce(
+                        self.topic_name,
+                        key=f"batch-{batch_id}-{i}",
+                        value=message_json.encode('utf-8'),
+                        callback=self.delivery_report
+                    )
+                except BufferError:
+                    # Handle buffer errors
+                    logger.warning("Local buffer full, flushing and retrying...")
+                    self.producer.poll(1)
+                    self.producer.produce(
+                        self.topic_name,
+                        key=f"batch-{batch_id}-{i}",
+                        value=message_json.encode('utf-8'),
+                        callback=self.delivery_report
+                    )
                 
-                # Flush every 1000 messages to prevent client buffer overflow
-                if i % 1000 == 0:
-                    self.producer.flush(timeout=1.0)
+                # Poll to handle callbacks
+                if i % 100 == 0:
+                    self.producer.poll(0)
+                
+                # Flush every 1000 messages
+                if i % 1000 == 0 and i > 0:
+                    remaining = self.producer.flush(timeout=5.0)
+                    if remaining > 0:
+                        logger.warning(f"{remaining} messages still in queue after flush")
             
             # Final flush to ensure all messages are sent
-            self.producer.flush(timeout=5.0)
+            remaining = self.producer.flush(timeout=10.0)
+            if remaining > 0:
+                logger.warning(f"{remaining} messages still in queue after final flush")
             
             batch_id += 1
             avg_payload_size = batch_payload_size / batch_size
@@ -373,106 +424,7 @@ class WorkloadGenerator:
                 logger.info(f"Sleeping for {sleep_time:.2f} seconds until next batch")
                 time.sleep(sleep_time)
     
-    def run_mixed_workload(self, duration_seconds=10800):
-        """Run mixed workload that combines aspects of real-time and batch (default 3 hours)."""
-        logger.info(f"Starting mixed workload for {duration_seconds} seconds")
-        self.current_workload = "mixed"
-        self.start_time = time.time()
-        self.messages_sent = 0
-        self.bytes_sent = 0
-        
-        end_time = time.time() + duration_seconds
-        
-        # Mixed workload params (70% real-time, 30% batch)
-        real_time_rate = 700  # 700 messages per second for real-time
-        batch_interval = 120  # Send a batch every 120 seconds
-        inter_message_delay = 1.0 / real_time_rate
-        
-        batch_id = 0
-        batch_thread = None
-        
-        while time.time() < end_time and self.running:
-            # Start a batch in a separate thread every batch_interval
-            if batch_thread is None or not batch_thread.is_alive():
-                if batch_id > 0:  # Not the first iteration
-                    logger.info(f"Starting new batch #{batch_id}")
-                    
-                batch_size = random.randint(5000, 15000)
-                batch_thread = threading.Thread(
-                    target=self._send_batch,
-                    args=(batch_id, batch_size)
-                )
-                batch_thread.daemon = True
-                batch_thread.start()
-                batch_id += 1
-                last_batch_time = time.time()
-            
-            # Continue sending real-time messages
-            batch_start = time.time()
-            batch_size = min(50, int(real_time_rate / 20))
-            
-            batch_payload_size = 0
-            for _ in range(batch_size):
-                message = self.generate_real_time_speech_data()
-                # Add mixed workload taxonomy
-                message["taxonomy"]["processing_pattern"] = "near_real_time"
-                
-                message_json = json.dumps(message)
-                batch_payload_size += len(message_json)
-                
-                self.producer.produce(
-                    self.topic_name,
-                    key=str(uuid.uuid4()),
-                    value=message_json.encode('utf-8'),
-                    callback=self.delivery_report
-                )
-            
-            # Flush batch of real-time messages
-            self.producer.flush(timeout=1.0)
-            
-            # Log metrics periodically
-            if time.time() - last_batch_time >= 30:  # Log every 30 seconds
-                avg_payload_size = batch_payload_size / batch_size
-                self.log_metrics(
-                    workload_type="mixed",
-                    message_rate=real_time_rate + (batch_size / batch_interval),
-                    payload_size=avg_payload_size,
-                    batch_size=batch_size
-                )
-                logger.info(f"Mixed workload: Real-time rate: {real_time_rate} msg/s, Last batch size: {batch_size}")
-            
-            # Sleep to maintain target message rate
-            batch_duration = time.time() - batch_start
-            sleep_time = max(0, (batch_size * inter_message_delay) - batch_duration)
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-    
-    def _send_batch(self, batch_id, batch_size):
-        """Helper method to send a batch of messages in a separate thread."""
-        logger.info(f"Starting batch #{batch_id} with {batch_size} messages")
-        
-        batch_payload_size = 0
-        for i in range(batch_size):
-            message = self.generate_batch_speech_data(batch_id)
-            message_json = json.dumps(message)
-            batch_payload_size += len(message_json)
-            
-            self.producer.produce(
-                self.topic_name,
-                key=f"batch-{batch_id}-{i}",
-                value=message_json.encode('utf-8'),
-                callback=self.delivery_report
-            )
-            
-            # Flush every 1000 messages
-            if i % 1000 == 0:
-                self.producer.flush(timeout=1.0)
-        
-        # Final flush
-        self.producer.flush(timeout=5.0)
-        
-        avg_payload_size = batch_payload_size / batch_size
-        logger.info(f"Completed batch #{batch_id}, sent {batch_size} messages, avg payload size: {avg_payload_size:.0f} bytes")
+    # Mixed workload implementation removed as requested
     
     def run_workload_rotation(self, cycles=1):
         """Run complete workload rotation for specified number of cycles."""
@@ -493,10 +445,7 @@ class WorkloadGenerator:
                 if not self.running:
                     break
                 
-                # Run mixed workload for 3 hours
-                self.run_mixed_workload(duration_seconds=10800)
-                if not self.running:
-                    break
+                # Mixed workload removed as requested
             
             logger.info(f"Completed {cycles} workload rotation cycles")
         
@@ -514,16 +463,18 @@ class WorkloadGenerator:
         self.running = False
         
         if self.producer:
-            self.producer.flush(timeout=5.0)
+            self.producer.flush(timeout=10.0)
             logger.info("Final flush completed")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Kafka AI Workload Generator")
-    parser.add_argument("--bootstrap-servers", default="localhost:9092", help="Kafka bootstrap servers")
+    # Use comma-separated bootstrap servers for multi-broker environment
+    parser.add_argument("--bootstrap-servers", default="kafka1:9092,kafka2:9093,kafka3:9094", 
+                       help="Comma-separated Kafka bootstrap servers")
     parser.add_argument("--topic", default="ai_workloads", help="Kafka topic to produce to")
     parser.add_argument("--metrics-port", type=int, default=8000, help="Port for Prometheus metrics")
-    parser.add_argument("--workload", choices=["real_time", "batch", "mixed", "rotation"], 
+    parser.add_argument("--workload", choices=["real_time", "batch", "rotation"], 
                         default="rotation", help="Workload type to generate")
     parser.add_argument("--duration", type=int, default=3600, 
                         help="Duration in seconds (for non-rotation workloads)")
@@ -532,30 +483,35 @@ def main():
     
     args = parser.parse_args()
     
-    generator = WorkloadGenerator(
-        bootstrap_servers=args.bootstrap_servers,
-        topic_name=args.topic,
-        metrics_port=args.metrics_port
-    )
-    
-    generator.connect()
-    
+    # Setup error handling
     try:
-        if args.workload == "real_time":
-            generator.run_real_time_workload(duration_seconds=args.duration)
-        elif args.workload == "batch":
-            generator.run_batch_workload(duration_seconds=args.duration)
-        elif args.workload == "mixed":
-            generator.run_mixed_workload(duration_seconds=args.duration)
-        elif args.workload == "rotation":
-            generator.run_workload_rotation(cycles=args.cycles)
+        generator = WorkloadGenerator(
+            bootstrap_servers=args.bootstrap_servers,
+            topic_name=args.topic,
+            metrics_port=args.metrics_port
+        )
+        
+        generator.connect()
+        
+        try:
+            if args.workload == "real_time":
+                generator.run_real_time_workload(duration_seconds=args.duration)
+            elif args.workload == "batch":
+                generator.run_batch_workload(duration_seconds=args.duration)
+            # Mixed workload option removed
+            elif args.workload == "rotation":
+                generator.run_workload_rotation(cycles=args.cycles)
+        
+        except KeyboardInterrupt:
+            logger.info("Workload generator interrupted by user")
+        
+        finally:
+            generator.stop()
+            logger.info("Workload generator shutdown complete")
     
-    except KeyboardInterrupt:
-        logger.info("Workload generator interrupted by user")
-    
-    finally:
-        generator.stop()
-        logger.info("Workload generator shutdown complete")
+    except Exception as e:
+        logger.error(f"Fatal error in workload generator: {e}", exc_info=True)
+        exit(1)
 
 
 if __name__ == "__main__":
