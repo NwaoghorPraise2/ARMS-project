@@ -80,7 +80,6 @@ class WorkloadGenerator:
             'batch.size': 16384,
             'max.in.flight.requests.per.connection': 5,
             'request.required.acks': -1, # Wait for all in-sync replicas
-
             'delivery.timeout.ms': 120000  # 2 minutes timeout for delivery
         }
         
@@ -269,193 +268,224 @@ class WorkloadGenerator:
         }
         
         return message
-    
-    def run_real_time_workload(self, duration_seconds=7200):
-        """Run real-time event-driven workload for specified duration (default 2 hours)."""
-        logger.info(f"Starting real-time event-driven workload for {duration_seconds} seconds")
-        self.current_workload = "real_time"
+
+    def run_balanced_workload(self, total_duration_seconds=3600, interval_seconds=300, total_messages=2160000):
+        """
+        Run alternating real-time and batch workloads for a total duration,
+        ensuring both types send the same number of messages.
+        
+        Args:
+            total_duration_seconds: Total runtime in seconds (default: 1 hour)
+            interval_seconds: Time to spend on each workload before switching (default: 5 minutes)
+            total_messages: Total target messages to send across all workloads (default: 2.16M)
+        """
+        logger.info(f"Starting balanced workload for {total_duration_seconds} seconds")
+        logger.info(f"Target: {total_messages} total messages, equal split between workload types")
+        
+        self.running = True
         self.start_time = time.time()
-        self.messages_sent = 0
-        self.bytes_sent = 0
+        end_time = time.time() + total_duration_seconds
         
-        end_time = time.time() + duration_seconds
-        # With 3 brokers, we can handle more messages
-        message_rate = 1200  # Increased for multi-broker setup
-        inter_message_delay = 1.0 / message_rate
+        # Calculate how many intervals we'll have
+        total_intervals = total_duration_seconds // interval_seconds
+        if total_intervals % 2 != 0:
+            total_intervals -= 1  # Ensure even number of intervals for equal split
         
-        batch_counter = 0  # For logging purposes
-        total_payload_size = 0
+        # Calculate messages per workload type
+        messages_per_type = total_messages // 2
+        # Calculate messages per interval
+        messages_per_interval = messages_per_type // (total_intervals // 2)
         
-        while time.time() < end_time and self.running:
-            batch_start = time.time()
-            batch_size = min(50, int(message_rate / 20))
+        logger.info(f"Will run {total_intervals} intervals of {interval_seconds} seconds each")
+        logger.info(f"Target: {messages_per_interval} messages per interval")
+        
+        # Initialize counters
+        real_time_messages = 0
+        batch_messages = 0
+        current_interval = 0
+        
+        while time.time() < end_time and self.running and current_interval < total_intervals:
+            interval_start = time.time()
+            interval_end = interval_start + interval_seconds
             
-            batch_payload_size = 0
-            for _ in range(batch_size):
-                message = self.generate_real_time_speech_data()
-                message_json = json.dumps(message)
-                batch_payload_size += len(message_json)
+            # Determine current workload type
+            is_real_time = (current_interval % 2 == 0)
+            workload_type = "real_time" if is_real_time else "batch"
+            self.current_workload = workload_type
+            
+            logger.info(f"Starting interval {current_interval+1}/{total_intervals}: {workload_type}")
+            
+            if is_real_time:
+                # Run real-time workload for this interval
+                message_rate = messages_per_interval / interval_seconds
+                logger.info(f"Real-time workload: Target rate {message_rate:.2f} msgs/sec")
                 
-                try:
-                    self.producer.produce(
-                        self.topic_name,
-                        key=str(uuid.uuid4()),
-                        value=message_json.encode('utf-8'),
-                        callback=self.delivery_report
-                    )
-                except BufferError:
-                    # If the local buffer is full, wait a bit and retry
-                    logger.warning("Local buffer full, waiting...")
-                    self.producer.poll(1)
-                    # Retry producing the message
-                    self.producer.produce(
-                        self.topic_name,
-                        key=str(uuid.uuid4()),
-                        value=message_json.encode('utf-8'),
-                        callback=self.delivery_report
-                    )
-            
-            # Poll to handle callbacks
-            self.producer.poll(0)
-            
-            # Flush every batch to ensure delivery
-            remaining = self.producer.flush(timeout=5.0)
-            if remaining > 0:
-                logger.warning(f"{remaining} messages still in queue after flush")
-            
-            batch_counter += 1
-            total_payload_size += batch_payload_size
-            avg_payload_size = batch_payload_size / batch_size
-            
-            # Log metrics every 10 batches
-            if batch_counter % 10 == 0:
+                inter_message_delay = 1.0 / message_rate
+                interval_messages_sent = 0
+                
+                while time.time() < interval_end and self.running:
+                    batch_start = time.time()
+                    # Calculate optimal batch size based on rate
+                    batch_size = min(50, max(1, int(message_rate / 10)))
+                    
+                    batch_payload_size = 0
+                    for _ in range(batch_size):
+                        if interval_messages_sent >= messages_per_interval:
+                            break
+                            
+                        message = self.generate_real_time_speech_data()
+                        message_json = json.dumps(message)
+                        batch_payload_size += len(message_json)
+                        
+                        try:
+                            self.producer.produce(
+                                self.topic_name,
+                                key=str(uuid.uuid4()),
+                                value=message_json.encode('utf-8'),
+                                callback=self.delivery_report
+                            )
+                            interval_messages_sent += 1
+                        except BufferError:
+                            # If the local buffer is full, wait a bit and retry
+                            logger.warning("Local buffer full, waiting...")
+                            self.producer.poll(1)
+                            # Retry producing the message
+                            self.producer.produce(
+                                self.topic_name,
+                                key=str(uuid.uuid4()),
+                                value=message_json.encode('utf-8'),
+                                callback=self.delivery_report
+                            )
+                            interval_messages_sent += 1
+                    
+                    # Poll to handle callbacks
+                    self.producer.poll(0)
+                    
+                    if interval_messages_sent >= messages_per_interval:
+                        logger.info(f"Reached target message count for interval: {interval_messages_sent}")
+                        break
+                    
+                    # Calculate how long to sleep to maintain the target rate
+                    batch_duration = time.time() - batch_start
+                    sleep_time = max(0, (batch_size * inter_message_delay) - batch_duration)
+                    if sleep_time > 0:
+                        time.sleep(sleep_time)
+                
+                # Update counters
+                real_time_messages += interval_messages_sent
+                logger.info(f"Real-time interval complete: Sent {interval_messages_sent} messages")
+                
+                # Log metrics
+                avg_payload_size = batch_payload_size / batch_size if batch_size > 0 else 0
                 self.log_metrics(
                     workload_type="real_time",
                     message_rate=message_rate,
                     payload_size=avg_payload_size,
-                    batch_size=0  # Not a batch workload
+                    batch_size=0
                 )
-                logger.info(f"Real-time workload: Sent {batch_size} messages, avg payload size: {avg_payload_size:.0f} bytes")
-            
-            # Calculate how long to sleep to maintain the target message rate
-            batch_duration = time.time() - batch_start
-            sleep_time = max(0, (batch_size * inter_message_delay) - batch_duration)
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-        
-        logger.info(f"Completed real-time workload. Sent {self.messages_sent} messages")
-    
-    def run_batch_workload(self, duration_seconds=3600):
-        """Run batch data-intensive workload for specified duration (default 1 hour)."""
-        logger.info(f"Starting batch data-intensive workload for {duration_seconds} seconds")
-        self.current_workload = "batch"
-        self.start_time = time.time()
-        self.messages_sent = 0
-        self.bytes_sent = 0
-        
-        end_time = time.time() + duration_seconds
-        batch_interval = 90  # Interval between batches
-        
-        batch_id = 0
-        
-        while time.time() < end_time and self.running:
-            batch_start = time.time()
-            
-            # With 3 brokers, can handle larger batches
-            batch_size = random.randint(8000, 20000)
-            logger.info(f"Sending batch #{batch_id} with {batch_size} messages")
-            
-            batch_payload_size = 0
-            for i in range(batch_size):
-                message = self.generate_batch_speech_data(batch_id)
-                message_json = json.dumps(message)
-                batch_payload_size += len(message_json)
                 
-                try:
-                    self.producer.produce(
-                        self.topic_name,
-                        key=f"batch-{batch_id}-{i}",
-                        value=message_json.encode('utf-8'),
-                        callback=self.delivery_report
-                    )
-                except BufferError:
-                    # Handle buffer errors
-                    logger.warning("Local buffer full, flushing and retrying...")
-                    self.producer.poll(1)
-                    self.producer.produce(
-                        self.topic_name,
-                        key=f"batch-{batch_id}-{i}",
-                        value=message_json.encode('utf-8'),
-                        callback=self.delivery_report
-                    )
+            else:
+                # Run batch workload for this interval
+                # Calculate how many batches to send in this interval
+                batch_size = 10000  # Fixed batch size
+                num_batches = max(1, messages_per_interval // batch_size)
                 
-                # Poll to handle callbacks
-                if i % 100 == 0:
-                    self.producer.poll(0)
+                # If we can't fit exactly into batches, adjust the batch size
+                if messages_per_interval % batch_size != 0:
+                    batch_size = messages_per_interval // num_batches
                 
-                # Flush every 1000 messages
-                if i % 1000 == 0 and i > 0:
-                    remaining = self.producer.flush(timeout=5.0)
-                    if remaining > 0:
-                        logger.warning(f"{remaining} messages still in queue after flush")
+                batch_interval = interval_seconds / num_batches
+                logger.info(f"Batch workload: {num_batches} batches of {batch_size} messages each")
+                logger.info(f"Batch interval: {batch_interval:.2f} seconds")
+                
+                interval_messages_sent = 0
+                batch_id = 0
+                
+                while time.time() < interval_end and self.running and interval_messages_sent < messages_per_interval:
+                    batch_start = time.time()
+                    
+                    # Adjust last batch size to hit target exactly
+                    remaining_messages = messages_per_interval - interval_messages_sent
+                    current_batch_size = min(batch_size, remaining_messages)
+                    
+                    logger.info(f"Sending batch #{batch_id+1}/{num_batches} with {current_batch_size} messages")
+                    
+                    batch_payload_size = 0
+                    for i in range(current_batch_size):
+                        message = self.generate_batch_speech_data(batch_id)
+                        message_json = json.dumps(message)
+                        batch_payload_size += len(message_json)
+                        
+                        try:
+                            self.producer.produce(
+                                self.topic_name,
+                                key=f"batch-{batch_id}-{i}",
+                                value=message_json.encode('utf-8'),
+                                callback=self.delivery_report
+                            )
+                        except BufferError:
+                            # Handle buffer errors
+                            logger.warning("Local buffer full, flushing and retrying...")
+                            self.producer.poll(1)
+                            self.producer.produce(
+                                self.topic_name,
+                                key=f"batch-{batch_id}-{i}",
+                                value=message_json.encode('utf-8'),
+                                callback=self.delivery_report
+                            )
+                        
+                        # Poll to handle callbacks
+                        if i % 100 == 0:
+                            self.producer.poll(0)
+                    
+                    # Flush to ensure delivery
+                    self.producer.flush(timeout=5.0)
+                    
+                    interval_messages_sent += current_batch_size
+                    batch_id += 1
+                    
+                    # Calculate sleep time to maintain batch interval
+                    batch_duration = time.time() - batch_start
+                    sleep_time = max(0, batch_interval - batch_duration)
+                    
+                    # Only sleep if we haven't reached the end of the interval
+                    # and we haven't sent all messages yet
+                    if sleep_time > 0 and time.time() + sleep_time < interval_end and interval_messages_sent < messages_per_interval:
+                        logger.info(f"Sleeping for {sleep_time:.2f} seconds until next batch")
+                        time.sleep(sleep_time)
+                
+                # Update counters
+                batch_messages += interval_messages_sent
+                logger.info(f"Batch interval complete: Sent {interval_messages_sent} messages")
+                
+                # Log metrics
+                avg_payload_size = batch_payload_size / current_batch_size if current_batch_size > 0 else 0
+                self.log_metrics(
+                    workload_type="batch",
+                    message_rate=interval_messages_sent / interval_seconds,
+                    payload_size=avg_payload_size,
+                    batch_size=batch_size
+                )
             
-            # Final flush to ensure all messages are sent
-            remaining = self.producer.flush(timeout=10.0)
-            if remaining > 0:
-                logger.warning(f"{remaining} messages still in queue after final flush")
+            # Move to next interval
+            current_interval += 1
             
-            batch_id += 1
-            avg_payload_size = batch_payload_size / batch_size
-            
-            # Log metrics for this batch
-            self.log_metrics(
-                workload_type="batch",
-                message_rate=batch_size / batch_interval,
-                payload_size=avg_payload_size,
-                batch_size=batch_size
-            )
-            
-            logger.info(f"Batch workload: Completed batch #{batch_id-1}, sent {batch_size} messages, avg payload size: {avg_payload_size:.0f} bytes")
-            
-            # Sleep until the next batch interval
-            batch_duration = time.time() - batch_start
-            sleep_time = max(0, batch_interval - batch_duration)
-            if sleep_time > 0:
-                logger.info(f"Sleeping for {sleep_time:.2f} seconds until next batch")
-                time.sleep(sleep_time)
-    
-    # Mixed workload implementation removed as requested
-    
-    def run_workload_rotation(self, cycles=1):
-        """Run complete workload rotation for specified number of cycles."""
-        logger.info(f"Starting workload rotation for {cycles} cycles")
-        self.running = True
+            # If we finished the interval early, sleep until the next one
+            time_to_next = interval_end - time.time()
+            if time_to_next > 0 and self.running and current_interval < total_intervals:
+                logger.info(f"Finished interval early, sleeping for {time_to_next:.2f} seconds until next interval")
+                time.sleep(time_to_next)
         
-        try:
-            for cycle in range(cycles):
-                logger.info(f"Starting cycle {cycle+1}/{cycles}")
-                
-                # Run real-time workload for 2 hours
-                self.run_real_time_workload(duration_seconds=7200)
-                if not self.running:
-                    break
-                
-                # Run batch workload for 1 hour
-                self.run_batch_workload(duration_seconds=3600)
-                if not self.running:
-                    break
-                
-                # Mixed workload removed as requested
-            
-            logger.info(f"Completed {cycles} workload rotation cycles")
+        # Final flush to ensure all messages are delivered
+        self.producer.flush(timeout=10.0)
         
-        except KeyboardInterrupt:
-            logger.info("Workload rotation interrupted by user")
-            self.running = False
-        
-        except Exception as e:
-            logger.error(f"Error in workload rotation: {e}", exc_info=True)
-            self.running = False
+        # Log final stats
+        total_elapsed = time.time() - self.start_time
+        logger.info(f"Balanced workload complete:")
+        logger.info(f"- Real-time messages: {real_time_messages}")
+        logger.info(f"- Batch messages: {batch_messages}")
+        logger.info(f"- Total messages: {real_time_messages + batch_messages}")
+        logger.info(f"- Total time: {total_elapsed:.2f} seconds")
     
     def stop(self):
         """Stop the workload generator."""
@@ -474,12 +504,14 @@ def main():
                        help="Comma-separated Kafka bootstrap servers")
     parser.add_argument("--topic", default="ai_workloads", help="Kafka topic to produce to")
     parser.add_argument("--metrics-port", type=int, default=8000, help="Port for Prometheus metrics")
-    parser.add_argument("--workload", choices=["real_time", "batch", "rotation"], 
-                        default="rotation", help="Workload type to generate")
+    parser.add_argument("--workload", choices=["real_time", "batch", "balanced"], 
+                        default="balanced", help="Workload type to generate")
     parser.add_argument("--duration", type=int, default=3600, 
-                        help="Duration in seconds (for non-rotation workloads)")
-    parser.add_argument("--cycles", type=int, default=1, 
-                        help="Number of full cycles for rotation workload")
+                        help="Duration in seconds (for all workloads)")
+    parser.add_argument("--interval", type=int, default=300, 
+                        help="Interval in seconds between workload switches in balanced mode")
+    parser.add_argument("--total-messages", type=int, default=2160000, 
+                        help="Target total message count for balanced workload")
     
     args = parser.parse_args()
     
@@ -498,9 +530,12 @@ def main():
                 generator.run_real_time_workload(duration_seconds=args.duration)
             elif args.workload == "batch":
                 generator.run_batch_workload(duration_seconds=args.duration)
-            # Mixed workload option removed
-            elif args.workload == "rotation":
-                generator.run_workload_rotation(cycles=args.cycles)
+            elif args.workload == "balanced":
+                generator.run_balanced_workload(
+                    total_duration_seconds=args.duration,
+                    interval_seconds=args.interval,
+                    total_messages=args.total_messages
+                )
         
         except KeyboardInterrupt:
             logger.info("Workload generator interrupted by user")

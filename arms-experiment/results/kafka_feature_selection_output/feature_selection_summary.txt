@@ -1,0 +1,17 @@
+Kafka Workload Feature Selection Summary
+=======================================
+
+Total features available: 15
+Selected features: 3
+Selection threshold: 1.2
+
+Selected feature names:
+- message_rate_variance
+- request_rate_variance
+- node_disk_write_bytes_total
+
+Performance Comparison:
+All features (15): Accuracy=0.9970, F1=0.9970
+Selected features (3): Accuracy=0.9920, F1=0.9920
+
+Processing time: 12.02 seconds

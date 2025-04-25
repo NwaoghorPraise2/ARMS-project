@@ -21,17 +21,15 @@ fi
 
 ### Step 2: Launch Docker Containers ###
 echo -e "${YELLOW}Step 2: Starting Docker containers${NC}"
-docker-compose up -d
+docker-compose up
 
-echo -e "${YELLOW}Waiting for Kafka to initialise (30s)...${NC}"
-sleep 30
+# echo -e "${YELLOW}Waiting for Kafka to initialise (30s)...${NC}"
+# sleep 30
 
 ### Step 3: Kafka Topic Setup ###
-docker exec -it kafka1 kafka-topics --create --topic ai_workloads \
-  --bootstrap-server kafka1:9092 \
-  --replication-factor 3 \
-  --partitions 6 \
-  --config min.insync.replicas=2
+# docker exec -it kafka1 kafka-topics --create --topic ai_workloads \
+#   --bootstrap-server kafka1:9092 \
+#   --partitions 6 \
 
 ### Step 4: Workload Generator ###
 echo -e "${YELLOW}Step 4: Starting workload generator${NC}"
@@ -40,11 +38,20 @@ echo -e "${YELLOW}Step 4: Starting workload generator${NC}"
 
 
 # Run the workload generator
-# docker exec kafka1 kafka-topics --create \
-#   --bootstrap-server kafka1:29092 \
-#   --replication-factor 1 \
-#   --partitions 6 \
-#   --topic ai_workloads || echo "Topic might already exist"
+echo "Creating Kafka topic '$TOPIC_NAME'..."
+docker exec kafka1 kafka-topics --create \
+  --bootstrap-server kafka1:29092 \
+  --replication-factor 1 \
+  --partitions 6 \
+  --topic $TOPIC_NAME || echo "Topic might already exist"
+
+# Verify the topic was created
+echo "Verifying topic creation..."
+docker exec kafka1 kafka-topics --describe \
+  --bootstrap-server kafka1:29092 \
+  --topic $TOPIC_NAME
+  
+echo -e "${YELLOW}Starting workload generator...${NC}"
 
 
 ### Finish ###
@@ -52,8 +59,8 @@ echo -e "${GREEN}ARMS Experiment Execution Started Successfully${NC}"
 
 
 echo -e "${YELLOW}Starting metrics collector...${NC}"
-python3 metric_collector.py --output all_metrics.csv --interval 15 --prometheus-url http://localhost:9090 &
-METRICS_PID=$!
+# python3 metric_collector.py --output all_metrics.csv --interval 15 --prometheus-url http://localhost:9090 &
+# METRICS_PID=$!
 
 echo -e "${GREEN}Experiment setup complete!${NC}"
 echo -e "${GREEN}Grafana UI: http://localhost:3000 (admin/admin)${NC}"

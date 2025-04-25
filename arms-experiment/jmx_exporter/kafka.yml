@@ -64,6 +64,21 @@ rules:
     type: GAUGE
 
   # Additional metrics for workload characterization
+  # - pattern: 'kafka.server<type=BrokerTopicMetrics, name=BytesOutPerSec, topic=(.+)><>Count'
+  #   name: kafka_server_brokertopicmetrics_bytesout_total
+  #   help: 'Total bytes sent for topic'
+  #   type: COUNTER
+  #   labels:
+  #     topic: '$1'
+
+  # cherck if this works..
+  # - pattern: 'kafka.network<type=RequestMetrics, name=(.+), request=(.+)>'
+  #   name: kafka_network_requestmetrics_$1
+  #   labels:
+  #   request: '$2'
+  #   type: SUMMARY
+  #   help: 'Request metrics for Kafka'
+
   - pattern: 'kafka.network<type=RequestMetrics, name=RequestQueueTimeMs, request=(.+)><>Mean'
     name: kafka_network_requestmetrics_requestqueuetimems
     help: 'Time spent in request queue'

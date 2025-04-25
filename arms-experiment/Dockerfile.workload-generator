@@ -1,6 +1,4 @@
-FROM python:3.10-slim
-
-WORKDIR /app
+FROM python:3.9-slim
 
 # Install dependencies
 COPY requirements.txt .
@@ -19,4 +17,4 @@ EXPOSE 8000
 ENTRYPOINT ["python", "workload_generator.py"]
 
 # Default arguments - will be overridden by environment variables in docker-compose
-CMD ["--bootstrap-servers", "kafka1:9092", "--workload", "rotation", "--cycles", "1"]
+CMD ["--bootstrap-servers", "kafka1:9092,kafka2:9093,kafka3:9094", "--workload", "balanced", "--duration", "3600", "--interval", "300", "--total-messages", "2160000"]

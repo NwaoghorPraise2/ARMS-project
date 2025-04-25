@@ -37,8 +37,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Current workload type detected by the system",
       "fieldConfig": {
@@ -102,8 +102,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "workload_type",
@@ -117,8 +117,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Workload classification based on message rate variance. Higher values indicate batch processing.",
       "fieldConfig": {
@@ -175,8 +175,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "stddev_over_time(sum(rate(kafka_server_brokertopicmetrics_messagesin_total[1m]))[15m:1m]) / avg_over_time(sum(rate(kafka_server_brokertopicmetrics_messagesin_total[1m]))[15m:1m])",
@@ -190,8 +190,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Current batch size (0 for real-time workloads)",
       "fieldConfig": {
@@ -244,8 +244,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "batch_size",
@@ -272,8 +272,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Message throughput rate across the Kafka cluster",
       "fieldConfig": {
@@ -348,8 +348,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(kafka_server_brokertopicmetrics_messagesin_total[5m]))",
@@ -360,8 +360,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "message_rate",
@@ -377,8 +377,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Average message size in bytes",
       "fieldConfig": {
@@ -453,8 +453,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(kafka_server_brokertopicmetrics_bytesin_total[5m])) / sum(rate(kafka_server_brokertopicmetrics_messagesin_total[5m]))",
@@ -465,8 +465,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "payload_size",
@@ -482,8 +482,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Message rate variance over time - a key indicator of batch vs. real-time workloads",
       "fieldConfig": {
@@ -566,8 +566,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "stddev_over_time(sum(rate(kafka_server_brokertopicmetrics_messagesin_total[1m]))[15m:1m]) / avg_over_time(sum(rate(kafka_server_brokertopicmetrics_messagesin_total[1m]))[15m:1m])",
@@ -578,8 +578,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "stddev_over_time(sum(rate(kafka_server_brokertopicmetrics_totalproducerequests_total[1m]))[15m:1m]) / avg_over_time(sum(rate(kafka_server_brokertopicmetrics_totalproducerequests_total[1m]))[15m:1m])",
@@ -608,8 +608,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "CPU utilization across Kafka brokers",
       "fieldConfig": {
@@ -688,8 +688,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "avg(rate(process_cpu_seconds_total[5m]) * 100)",
@@ -700,8 +700,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "max(rate(process_cpu_seconds_total[5m]) * 100)",
@@ -717,8 +717,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "JVM heap memory usage across Kafka brokers",
       "fieldConfig": {
@@ -797,8 +797,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "avg(java_lang_memory_heapmemoryusage_used)",
@@ -809,8 +809,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "max(java_lang_memory_heapmemoryusage_used)",
@@ -822,8 +822,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "stddev(java_lang_memory_heapmemoryusage_used) / avg(java_lang_memory_heapmemoryusage_used) * 1000000000",
@@ -839,8 +839,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Disk I/O utilization",
       "fieldConfig": {
@@ -932,8 +932,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(node_disk_io_time_seconds_total[5m]) * 100)",
@@ -944,8 +944,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(node_disk_read_bytes_total[5m]))",
@@ -957,8 +957,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(node_disk_write_bytes_total[5m]))",
@@ -987,8 +987,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "99th percentile request latency by request type",
       "fieldConfig": {
@@ -1067,8 +1067,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "max(kafka_network_requestmetrics_totaltimems{quantile=\"0.99\", request=\"Produce\"}) by (request)",
@@ -1079,8 +1079,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "max(kafka_network_requestmetrics_totaltimems{quantile=\"0.99\", request=\"Fetch\"}) by (request)",
@@ -1092,8 +1092,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "max(kafka_network_requestmetrics_totaltimems{quantile=\"0.99\", request=\"Metadata\"}) by (request)",
@@ -1109,8 +1109,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Producer and consumer request rates",
       "fieldConfig": {
@@ -1185,8 +1185,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(kafka_server_brokertopicmetrics_totalproducerequests_total[5m]))",
@@ -1197,8 +1197,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(kafka_server_brokertopicmetrics_totalfetchrequests_total[5m]))",
@@ -1214,8 +1214,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Thread count and request handler idle percentage",
       "fieldConfig": {
@@ -1306,8 +1306,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "avg(java_lang_threading_threadcount)",
@@ -1318,8 +1318,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "max(java_lang_threading_threadcount)",
@@ -1331,8 +1331,8 @@
         },
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "avg(kafka_server_requesthandlerpool_requesthandleravgidlepercent)",
@@ -1361,8 +1361,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Key cluster health metrics",
       "fieldConfig": {
@@ -1410,8 +1410,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(kafka_server_replicamanager_underreplicatedpartitions)",
@@ -1426,8 +1426,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Total partition count",
       "fieldConfig": {
@@ -1471,8 +1471,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(kafka_server_replicamanager_partitioncount)",
@@ -1487,8 +1487,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
+        "type": "Prometheus",
+        "uid": "Prometheus"
       },
       "description": "Leader partitions per broker",
       "fieldConfig": {
@@ -1532,8 +1532,8 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
+            "type": "Prometheus",
+            "uid": "Prometheus"
           },
           "editorMode": "code",
           "expr": "sum(kafka_server_replicamanager_leadercount)",

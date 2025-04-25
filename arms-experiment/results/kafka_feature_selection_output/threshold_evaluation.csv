@@ -1,0 +1,7 @@
+accuracy_mean,accuracy_std,f1_mean,f1_std,n_features,threshold,features
+0.9946666666666667,0.002666666666666648,0.9946665722200463,0.002666753243255206,5,0.8,"kafka_server_brokertopicmetrics_messagesin_total, message_rate_variance, request_rate_variance, node_memory_MemAvailable_bytes, node_disk_write_bytes_total"
+0.9943333333333333,0.0032659863237109116,0.9943332268483459,0.0032660288521128935,4,1.0,"message_rate_variance, request_rate_variance, node_memory_MemAvailable_bytes, node_disk_write_bytes_total"
+0.9920000000000002,0.004396968652757634,0.9919999166645834,0.004396974971579317,3,1.2,"message_rate_variance, request_rate_variance, node_disk_write_bytes_total"
+0.9920000000000002,0.004396968652757634,0.9919999166645834,0.004396974971579317,3,1.4,"message_rate_variance, request_rate_variance, node_disk_write_bytes_total"
+0.9866666666666667,0.00658280588604384,0.9866659536422114,0.00658354724839661,2,1.6,"request_rate_variance, node_disk_write_bytes_total"
+0.0,0.0,0.0,0.0,0,1.8,None

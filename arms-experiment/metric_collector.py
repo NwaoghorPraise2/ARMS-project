@@ -77,8 +77,11 @@ class MetricsCollector:
             # System Responsiveness metrics
             {"name": "kafka_network_requestmetrics_totaltimems",
              "endpoint": "/api/v1/query",
-             "params": {"query": 'max(kafka_network_requestmetrics_totaltimems{quantile="0.99"}) by (request)'}},
+             "params": {"query": 'avg(rate(kafka_network_requestmetrics_totaltimems{request="Produce"}[1m]))'}},
             
+
+
+
             {"name": "kafka_server_brokertopicmetrics_totalproducerequests_total",
              "endpoint": "/api/v1/query",
              "params": {"query": 'sum(rate(kafka_server_brokertopicmetrics_totalproducerequests_total[5m]))'}},
@@ -102,7 +105,7 @@ class MetricsCollector:
             
             {"name": "node_disk_write_bytes_total",
              "endpoint": "/api/v1/query",
-             "params": {"query": 'sum(rate(node_disk_write_bytes_total[1m]))'}}
+             "params": {"query": 'sum(rate(node_disk_written_bytes_total[1m]))'}}
         ]
         
     

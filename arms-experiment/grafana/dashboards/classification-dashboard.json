@@ -1,0 +1,886 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": "Prometheus",
+        "enable": true,
+        "expr": "changes(kafka_workload_type[5m]) > 0",
+        "iconColor": "rgba(255, 96, 96, 1)",
+        "name": "Workload Type Changes",
+        "showIn": 0,
+        "step": "1m",
+        "tagKeys": "type",
+        "textFormat": "Workload changed to {{$value}}",
+        "titleFormat": "Workload Type Changed"
+      },
+      {
+        "datasource": "Prometheus",
+        "enable": true,
+        "expr": "changes(kafka_recovery_strategy{strategy_name=\"QUICK_REBALANCE\"}[5m]) > 0 or changes(kafka_recovery_strategy{strategy_name=\"RESOURCE_OPTIMIZED\"}[5m]) > 0 or changes(kafka_recovery_strategy{strategy_name=\"CONTROLLED_GRADUAL\"}[5m]) > 0",
+        "iconColor": "rgba(255, 204, 0, 1)",
+        "name": "Strategy Changes",
+        "showIn": 0,
+        "step": "1m",
+        "textFormat": "Recovery strategy changed",
+        "titleFormat": "Strategy Changed"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 20,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 12,
+      "panels": [],
+      "title": "Current Classification & Strategy",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "blue",
+                  "index": 0,
+                  "text": "REAL_TIME_EVENT_DRIVEN"
+                },
+                "1": {
+                  "color": "purple",
+                  "index": 1,
+                  "text": "BATCH_DATA_INTENSIVE"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "purple",
+                "value": 0.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_workload_type",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Workload Type",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "green",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_prediction_confidence",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Classification Confidence",
+      "type": "gauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "QUICK_REBALANCE"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 28,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {}
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_recovery_strategy{strategy_name=\"QUICK_REBALANCE\"}",
+          "interval": "",
+          "legendFormat": "QUICK_REBALANCE",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_recovery_strategy{strategy_name=\"RESOURCE_OPTIMIZED\"}",
+          "interval": "",
+          "legendFormat": "RESOURCE_OPTIMIZED",
+          "refId": "B"
+        },
+        {
+          "expr": "kafka_recovery_strategy{strategy_name=\"CONTROLLED_GRADUAL\"}",
+          "interval": "",
+          "legendFormat": "CONTROLLED_GRADUAL",
+          "refId": "C"
+        }
+      ],
+      "title": "Current Recovery Strategy",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_workload_type",
+          "interval": "",
+          "legendFormat": "Workload Type",
+          "refId": "A"
+        }
+      ],
+      "title": "Workload Type History",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 9
+      },
+      "id": 30,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_recovery_strategy{strategy_name=\"QUICK_REBALANCE\"}",
+          "interval": "",
+          "legendFormat": "QUICK_REBALANCE",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_recovery_strategy{strategy_name=\"RESOURCE_OPTIMIZED\"}",
+          "interval": "",
+          "legendFormat": "RESOURCE_OPTIMIZED",
+          "refId": "B"
+        },
+        {
+          "expr": "kafka_recovery_strategy{strategy_name=\"CONTROLLED_GRADUAL\"}",
+          "interval": "",
+          "legendFormat": "CONTROLLED_GRADUAL",
+          "refId": "C"
+        }
+      ],
+      "title": "Recovery Strategy History",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 14,
+      "panels": [],
+      "title": "Classification Features",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull", "mean"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_feature_request_rate_variance",
+          "interval": "",
+          "legendFormat": "Request Rate Variance (46.55% importance)",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_feature_message_rate_variance",
+          "interval": "",
+          "legendFormat": "Message Rate Variance (14.54% importance)",
+          "refId": "B"
+        }
+      ],
+      "title": "Variance Features (Higher values suggest BATCH_DATA_INTENSIVE)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Memory Available (9.8% importance)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Disk Write (29.1% importance)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "Bps"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 17
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull", "mean"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_feature_node_disk_write_bytes_total",
+          "interval": "",
+          "legendFormat": "Disk Write (29.1% importance)",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_feature_node_memory_MemAvailable_bytes",
+          "interval": "",
+          "legendFormat": "Memory Available (9.8% importance)",
+          "refId": "B"
+        }
+      ],
+      "title": "Resource Features (Higher values suggest REAL_TIME_EVENT_DRIVEN)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      },
+      "id": 16,
+      "panels": [],
+      "title": "Decision Explanation",
+      "type": "row"
+    },
+    {
+      "datasource": null,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 26
+      },
+      "id": 18,
+      "options": {
+        "content": "## How the Classification Works\n\nThis dashboard shows the real-time classification of Kafka workloads using a Logistic Regression model.\n\n### Feature Importance\n\n1. **Request Rate Variance (46.55%)** - How variable the request rate is\n   - Higher values → BATCH_DATA_INTENSIVE (Type 1)\n   - Lower values → REAL_TIME_EVENT_DRIVEN (Type 0)\n\n2. **Disk Write Activity (29.10%)** - Amount of data being written to disk\n   - Higher values → REAL_TIME_EVENT_DRIVEN (Type 0)\n   - Lower values → BATCH_DATA_INTENSIVE (Type 1)\n\n3. **Message Rate Variance (14.54%)** - How variable the message rates are\n   - Higher values → BATCH_DATA_INTENSIVE (Type 1) \n   - Lower values → REAL_TIME_EVENT_DRIVEN (Type 0)\n\n4. **Memory Available (9.80%)** - Amount of memory available\n   - Higher values → REAL_TIME_EVENT_DRIVEN (Type 0)\n   - Lower values → BATCH_DATA_INTENSIVE (Type 1)\n\nThe model combines these features to make a prediction with a confidence score.",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.5.3",
+      "title": "Classification Explanation",
+      "type": "text"
+    },
+    {
+      "datasource": null,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 26
+      },
+      "id": 20,
+      "options": {
+        "content": "## Workload Type Characteristics\n\n### REAL_TIME_EVENT_DRIVEN (Type 0)\n- **Characterized by:**\n  - High disk write activity\n  - Consistent request patterns (low variance)\n  - Consistent message rates (low variance)\n  - Higher available memory\n\n- **Optimization Recommendations:**\n  - Reduce batch size for lower latency\n  - Increase producer thread count\n  - Optimize for throughput constancy\n\n### BATCH_DATA_INTENSIVE (Type 1)\n- **Characterized by:**\n  - Lower disk write activity\n  - Variable request patterns (high variance)\n  - Variable message rates (high variance)\n  - Lower available memory\n\n- **Optimization Recommendations:**\n  - Increase batch size for better throughput\n  - Adjust compression settings\n  - Optimize buffer sizes for spiky workloads",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.5.3",
+      "title": "Workload Type Explanation",
+      "type": "text"
+    },
+    {
+      "datasource": null,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 26
+      },
+      "id": 32,
+      "options": {
+        "content": "## Recovery Strategy Selection\n\nBased on the workload classification and confidence level, one of three recovery strategies is automatically selected:\n\n### QUICK_REBALANCE\n- **Used for:** REAL_TIME_EVENT_DRIVEN workloads (with ≥90% confidence)\n- **Parameters:**\n  - leader.imbalance.check.interval.seconds: 30\n  - leader.imbalance.per.broker.percentage: 10%\n  - replica.lag.time.max.ms: 10,000 ms (10 sec)\n  - replica.fetch.max.bytes: 1 MB\n  - num.replica.fetchers: 4\n\n### RESOURCE_OPTIMIZED\n- **Used for:** BATCH_DATA_INTENSIVE workloads (with ≥90% confidence)\n- **Parameters:**\n  - leader.imbalance.check.interval.seconds: 300\n  - leader.imbalance.per.broker.percentage: 20%\n  - replica.lag.time.max.ms: 30,000 ms (30 sec)\n  - replica.fetch.max.bytes: 512 KB\n  - num.replica.fetchers: 2\n\n### CONTROLLED_GRADUAL\n- **Used for:** Hybrid or low-confidence classifications\n- **Parameters:**\n  - leader.imbalance.check.interval.seconds: 120\n  - leader.imbalance.per.broker.percentage: 25%\n  - replica.lag.time.max.ms: 30,000 ms (30 sec)\n  - replica.fetch.max.bytes: 1 MB\n  - num.replica.fetchers: 2",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.5.3",
+      "title": "Recovery Strategy Explanation",
+      "type": "text"
+    },
+    {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 22,
+      "panels": [],
+      "title": "Model Performance",
+      "type": "row"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 35
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "rate(kafka_prediction_count_total[5m])",
+          "interval": "",
+          "legendFormat": "Predictions per Second",
+          "refId": "A"
+        }
+      ],
+      "title": "Classification Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 35
+      },
+      "id": 26,
+      "options": {
+        "displayLabels": ["percent"],
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_prediction_success_total",
+          "interval": "",
+          "legendFormat": "Successful Predictions",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_prediction_error_total",
+          "interval": "",
+          "legendFormat": "Failed Predictions",
+          "refId": "B"
+        }
+      ],
+      "title": "Prediction Success Rate",
+      "type": "piechart"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["kafka", "monitoring", "classification", "recovery"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Kafka Workload Classification & Recovery Strategy",
+  "uid": "kafka-workload-classifier",
+  "version": 1
+}
