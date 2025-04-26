@@ -25,6 +25,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - kafka_network
 
   kafka1:
     image: confluentinc/cp-kafka:7.3.2
@@ -41,8 +43,8 @@ services:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
@@ -53,6 +55,8 @@ services:
       KAFKA_OPTS: '-javaagent:/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9980:/jmx_exporter/kafka.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka1'
     volumes:
       - ./jmx_exporter:/jmx_exporter
+    networks:
+      - kafka_network
 
   kafka2:
     image: confluentinc/cp-kafka:7.3.2
@@ -68,8 +72,8 @@ services:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29093
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9093,PLAINTEXT_HOST://localhost:29093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093,PLAINTEXT_HOST://0.0.0.0:29093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
@@ -80,6 +84,8 @@ services:
       KAFKA_OPTS: '-javaagent:/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9981:/jmx_exporter/kafka.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka2'
     volumes:
       - ./jmx_exporter:/jmx_exporter
+    networks:
+      - kafka_network
 
   kafka3:
     image: confluentinc/cp-kafka:7.3.2
@@ -95,8 +101,8 @@ services:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,PLAINTEXT_HOST://0.0.0.0:29094
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:9094,PLAINTEXT_HOST://localhost:29094
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094,PLAINTEXT_HOST://0.0.0.0:29094
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
@@ -107,6 +113,8 @@ services:
       KAFKA_OPTS: '-javaagent:/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9982:/jmx_exporter/kafka.yml -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka3'
     volumes:
       - ./jmx_exporter:/jmx_exporter
+    networks:
+      - kafka_network
 
   prometheus:
     image: prom/prometheus
@@ -115,6 +123,8 @@ services:
       - '9090:9090'
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - kafka_network
 
   grafana:
     image: grafana/grafana
@@ -127,20 +137,26 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
+    networks:
+      - kafka_network
 
   node-exporter:
     image: prom/node-exporter
     platform: linux/arm64
     ports:
       - '9100:9100'
+    networks:
+      - kafka_network
 
   workload-generator:
     build:
       context: .
       dockerfile: Dockerfile.workload-generator
     container_name: workload-generator
+    restart: unless-stopped
     ports:
       - '8000:8000'
+      - '5005:5005' # Debugging port
     environment:
       - BOOTSTRAP_SERVERS=kafka1:9092,kafka2:9093,kafka3:9094
       - TOPIC=ai_workloads
@@ -149,6 +165,8 @@ services:
       - kafka1
       - kafka2
       - kafka3
+    networks:
+      - kafka_network
 
   arms-classifier:
     build:
@@ -161,11 +179,50 @@ services:
       - '8001:8001' # Prometheus metrics endpoint
     environment:
       - TZ=UTC
-      - PROMETHEUS_URL=http://prometheus:9090 # Set as environment variable
+      - PROMETHEUS_URL=http://prometheus:9090
+      - WORKLOAD_GENERATOR_URL=http://workload-generator:8000
+      - '--strategy-buffer=/app/data/strategy_buffer.json'
     volumes:
       - ./models:/app/models
     depends_on:
       - prometheus
+    networks:
+      - kafka_network
+
+  arms-controller:
+    build:
+      context: .
+      dockerfile: Dockerfile.controller
+    container_name: arms-controller
+    restart: unless-stopped
+    ports:
+      - '8002:8002' # Prometheus metrics endpoint
+    environment:
+      - KAFKA_BROKERS_ALTERNATIVE=kafka1:29092,kafka2:29093,kafka3:29094
+      - RECOVERY_API_URL=http://arms-classifier:5001/api/strategy
+      - PROMETHEUS_URL=http://prometheus:9090/api/v1/query
+      - KAFKA_BROKERS=kafka1:9092,kafka2:9093,kafka3:9094,kafka1:29092,kafka2:29093,kafka3:29094
+      - BUFFER_UPDATE_INTERVAL=2
+      - MONITORING_INTERVAL=5
+      - METRICS_PORT=8002
+      - TEST_MODE=True
+      - TEST_BROKER=kafka1:9092 # Broker to simulate failures for
+      - TEST_INTERVAL=60 # Seconds between simulated failures
+    volumes:
+      - ./data:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+      - prometheus
+      - arms-classifier
+    networks:
+      - kafka_network
+
+networks:
+  kafka_network:
+    driver: bridge
 
 volumes:
   grafana-data:

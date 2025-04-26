@@ -1,0 +1,13 @@
+{
+  "timestamp": 1745622169.5937593,
+  "strategy": "CONTROLLED_GRADUAL",
+  "workload_type": "HYBRID_UNKNOWN",
+  "config": {
+    "leader.imbalance.check.interval.seconds": 120,
+    "leader.imbalance.per.broker.percentage": 25,
+    "num.replica.fetchers": 2,
+    "rebalance.priority": "controlled",
+    "replica.fetch.max.bytes": 1048576,
+    "replica.lag.time.max.ms": 30000
+  }
+}

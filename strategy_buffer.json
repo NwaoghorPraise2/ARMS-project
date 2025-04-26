@@ -1,0 +1,13 @@
+{
+  "timestamp": 1745614327.4002492,
+  "strategy": "QUICK_REBALANCE",
+  "workload_type": "REAL_TIME_EVENT_DRIVEN",
+  "config": {
+    "leader.imbalance.check.interval.seconds": 30,
+    "leader.imbalance.per.broker.percentage": 10,
+    "num.replica.fetchers": 4,
+    "rebalance.priority": "speed",
+    "replica.fetch.max.bytes": 1048576,
+    "replica.lag.time.max.ms": 10000
+  }
+}

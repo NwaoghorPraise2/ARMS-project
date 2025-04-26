@@ -32,6 +32,17 @@
         "step": "1m",
         "textFormat": "Recovery strategy changed",
         "titleFormat": "Strategy Changed"
+      },
+      {
+        "datasource": "Prometheus",
+        "enable": true,
+        "expr": "changes(kafka_actual_workload_type[5m]) > 0",
+        "iconColor": "rgba(0, 255, 0, 1)",
+        "name": "Actual Workload Changes",
+        "showIn": 0,
+        "step": "1m",
+        "textFormat": "Actual workload changed to {{$value}}",
+        "titleFormat": "Actual Workload Changed"
       }
     ]
   },
@@ -97,7 +108,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
+        "w": 4,
         "x": 0,
         "y": 1
       },
@@ -124,7 +135,79 @@
           "refId": "A"
         }
       ],
-      "title": "Current Workload Type",
+      "title": "Predicted Workload",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "blue",
+                  "index": 0,
+                  "text": "REAL_TIME_EVENT_DRIVEN"
+                },
+                "1": {
+                  "color": "purple",
+                  "index": 1,
+                  "text": "BATCH_DATA_INTENSIVE"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "purple",
+                "value": 0.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 34,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_actual_workload_type",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Actual Workload",
       "type": "stat"
     },
     {
@@ -160,8 +243,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 6,
+        "w": 4,
+        "x": 8,
         "y": 1
       },
       "id": 4,
@@ -262,7 +345,187 @@
       "type": "bargauge"
     },
     {
+      "collapsed": false,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 36,
+      "panels": [],
+      "title": "Classification Alignment & Accuracy",
+      "type": "row"
+    },
+    {
       "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "Incorrect"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "Correct"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 10
+      },
+      "id": 38,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "kafka_classification_accuracy",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Classification Accuracy",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "Time between workload change and correct classification",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 30
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 6,
+        "y": 10
+      },
+      "id": 40,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(kafka_classification_latency_seconds_bucket[5m])) by (le))",
+          "interval": "",
+          "legendFormat": "p95 Latency",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(kafka_classification_latency_seconds_bucket[5m])) by (le))",
+          "interval": "",
+          "legendFormat": "p50 Latency",
+          "refId": "B"
+        }
+      ],
+      "title": "Classification Latency",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -305,18 +568,17 @@
                 "value": null
               }
             ]
-          },
-          "unit": "none"
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 0,
-        "y": 9
+        "h": 8,
+        "w": 9,
+        "x": 15,
+        "y": 10
       },
-      "id": 6,
+      "id": 42,
       "options": {
         "legend": {
           "calcs": [],
@@ -332,101 +594,17 @@
         {
           "expr": "kafka_workload_type",
           "interval": "",
-          "legendFormat": "Workload Type",
-          "refId": "A"
-        }
-      ],
-      "title": "Workload Type History",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 12,
-        "x": 12,
-        "y": 9
-      },
-      "id": 30,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "7.5.3",
-      "targets": [
-        {
-          "expr": "kafka_recovery_strategy{strategy_name=\"QUICK_REBALANCE\"}",
-          "interval": "",
-          "legendFormat": "QUICK_REBALANCE",
+          "legendFormat": "Predicted",
           "refId": "A"
         },
         {
-          "expr": "kafka_recovery_strategy{strategy_name=\"RESOURCE_OPTIMIZED\"}",
+          "expr": "kafka_actual_workload_type",
           "interval": "",
-          "legendFormat": "RESOURCE_OPTIMIZED",
+          "legendFormat": "Actual",
           "refId": "B"
-        },
-        {
-          "expr": "kafka_recovery_strategy{strategy_name=\"CONTROLLED_GRADUAL\"}",
-          "interval": "",
-          "legendFormat": "CONTROLLED_GRADUAL",
-          "refId": "C"
         }
       ],
-      "title": "Recovery Strategy History",
+      "title": "Workload Comparison",
       "type": "timeseries"
     },
     {
@@ -436,7 +614,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 18
       },
       "id": 14,
       "panels": [],
@@ -495,7 +673,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 17
+        "y": 19
       },
       "id": 8,
       "options": {
@@ -603,7 +781,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 17
+        "y": 19
       },
       "id": 10,
       "options": {
@@ -641,11 +819,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 27
       },
       "id": 16,
       "panels": [],
-      "title": "Decision Explanation",
+      "title": "System Explanation",
       "type": "row"
     },
     {
@@ -654,7 +832,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 26
+        "y": 28
       },
       "id": 18,
       "options": {
@@ -671,7 +849,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 26
+        "y": 28
       },
       "id": 20,
       "options": {
@@ -688,7 +866,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 26
+        "y": 28
       },
       "id": 32,
       "options": {
@@ -700,13 +878,30 @@
       "type": "text"
     },
     {
+      "datasource": null,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 36
+      },
+      "id": 44,
+      "options": {
+        "content": "## Classification Alignment\n\nThis system synchronizes the classification process with the workload generator:\n\n### Key Metrics\n\n1. **Classification Accuracy**\n   - Indicates whether the predicted workload type matches the actual workload\n   - Green = Correct, Red = Incorrect\n\n2. **Classification Latency**\n   - Time between a workload change and correct classification\n   - Lower is better, target < 30 seconds\n\n3. **Workload Comparison**\n   - Visualizes predicted vs actual workload types over time\n   - Helps identify misclassification periods\n\n### Benefits\n\n- Real-time validation of the classification model\n- Improved recovery strategy selection\n- Automated alignment with workload cycles",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.5.3",
+      "title": "Alignment Explanation",
+      "type": "text"
+    },
+    {
       "collapsed": false,
       "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 44
       },
       "id": 22,
       "panels": [],
@@ -769,7 +964,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 35
+        "y": 45
       },
       "id": 24,
       "options": {
@@ -816,7 +1011,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 35
+        "y": 45
       },
       "id": 26,
       "options": {

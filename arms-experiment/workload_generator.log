@@ -1,0 +1,48 @@
+2025-04-25 13:52:42,006 - workload_generator - INFO - Starting API server on port 5000
+2025-04-25 13:52:42,006 - workload_generator - INFO - Connecting to Kafka at kafka:9092
+2025-04-25 13:52:42,072 - workload_generator - INFO - Connected to Kafka
+2025-04-25 13:52:57,584 - workload_generator - INFO - Starting API server on port 5005
+2025-04-25 13:52:57,584 - workload_generator - INFO - Connecting to Kafka at kafka:9092
+2025-04-25 13:52:57,646 - workload_generator - INFO - Connected to Kafka
+2025-04-25 13:52:57,650 - workload_generator - INFO - Started Prometheus metrics server on port 8000
+2025-04-25 13:52:57,650 - workload_generator - INFO - Starting balanced workload for 3600 seconds
+2025-04-25 13:52:57,650 - workload_generator - INFO - Target: 2160000 total messages, equal split between workload types
+2025-04-25 13:52:57,651 - workload_generator - INFO - Will run 12 intervals of 300 seconds each
+2025-04-25 13:52:57,651 - workload_generator - INFO - Target: 180000 messages per interval
+2025-04-25 13:52:57,651 - workload_generator - INFO - Starting interval 1/12: real_time
+2025-04-25 13:52:57,651 - workload_generator - INFO - Real-time workload: Target rate 600.00 msgs/sec
+2025-04-25 13:52:57,658 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5005
+ * Running on http://192.168.0.14:5005
+2025-04-25 13:52:57,658 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-04-25 13:53:39,739 - werkzeug - INFO - 127.0.0.1 - - [25/Apr/2025 13:53:39] "[33mGET / HTTP/1.1[0m" 404 -
+2025-04-25 13:53:39,838 - werkzeug - INFO - 127.0.0.1 - - [25/Apr/2025 13:53:39] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-04-25 13:53:47,068 - werkzeug - INFO - 127.0.0.1 - - [25/Apr/2025 13:53:47] "[33mGET / HTTP/1.1[0m" 404 -
+2025-04-25 13:53:49,051 - werkzeug - INFO - 127.0.0.1 - - [25/Apr/2025 13:53:49] "GET /state HTTP/1.1" 200 -
+2025-04-25 23:35:10,271 - workload_generator - INFO - Starting API server on port 5005
+2025-04-25 23:35:10,271 - workload_generator - INFO - Connecting to Kafka at kafka:9092
+2025-04-25 23:35:10,333 - workload_generator - INFO - Connected to Kafka
+2025-04-25 23:35:10,363 - workload_generator - INFO - Started Prometheus metrics server on port 8000
+2025-04-25 23:35:10,363 - workload_generator - INFO - Starting real-time workload for 1800 seconds
+2025-04-25 23:35:10,363 - workload_generator - INFO - Target: 500000 total messages
+2025-04-25 23:35:10,363 - workload_generator - INFO - Real-time workload: Target rate 277.78 msgs/sec
+2025-04-25 23:35:10,368 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5005
+ * Running on http://192.168.0.14:5005
+2025-04-25 23:35:10,368 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-04-25 23:35:12,283 - workload_generator - INFO - Progress: 540/500000 messages sent (281.29 msgs/sec, avg size: 3509.45 bytes)
+2025-04-25 23:35:14,301 - workload_generator - INFO - Progress: 1080/500000 messages sent (274.25 msgs/sec, avg size: 3512.68 bytes)
+2025-04-25 23:35:16,319 - workload_generator - INFO - Progress: 1620/500000 messages sent (271.97 msgs/sec, avg size: 3511.86 bytes)
+2025-04-25 23:35:18,352 - workload_generator - INFO - Progress: 2160/500000 messages sent (270.36 msgs/sec, avg size: 3510.10 bytes)
+2025-04-25 23:35:20,390 - workload_generator - INFO - Progress: 2700/500000 messages sent (269.26 msgs/sec, avg size: 3509.93 bytes)
+2025-04-25 23:35:22,422 - workload_generator - INFO - Progress: 3240/500000 messages sent (268.68 msgs/sec, avg size: 3505.37 bytes)
+2025-04-25 23:35:24,433 - workload_generator - INFO - Progress: 3780/500000 messages sent (268.65 msgs/sec, avg size: 3503.04 bytes)
+2025-04-25 23:35:26,474 - workload_generator - INFO - Progress: 4320/500000 messages sent (268.13 msgs/sec, avg size: 3504.95 bytes)
+2025-04-25 23:35:28,505 - workload_generator - INFO - Progress: 4860/500000 messages sent (267.89 msgs/sec, avg size: 3506.55 bytes)
+2025-04-25 23:35:30,543 - workload_generator - INFO - Progress: 5400/500000 messages sent (267.59 msgs/sec, avg size: 3505.64 bytes)
+2025-04-25 23:35:32,570 - workload_generator - INFO - Progress: 5940/500000 messages sent (267.48 msgs/sec, avg size: 3504.32 bytes)
+2025-04-25 23:35:34,575 - workload_generator - INFO - Progress: 6480/500000 messages sent (267.64 msgs/sec, avg size: 3504.75 bytes)
+2025-04-25 23:35:36,602 - workload_generator - INFO - Progress: 7020/500000 messages sent (267.54 msgs/sec, avg size: 3502.31 bytes)
+2025-04-25 23:35:38,627 - workload_generator - INFO - Progress: 7560/500000 messages sent (267.48 msgs/sec, avg size: 3500.68 bytes)

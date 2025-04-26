@@ -12,9 +12,10 @@ RUN chmod +x workload_generator.py
 
 # Expose the Prometheus metrics port
 EXPOSE 8000
+EXPOSE 5005
 
 # Run the generator
 ENTRYPOINT ["python", "workload_generator.py"]
 
 # Default arguments - will be overridden by environment variables in docker-compose
-CMD ["--bootstrap-servers", "kafka1:9092,kafka2:9093,kafka3:9094", "--workload", "balanced", "--duration", "3600", "--interval", "300", "--total-messages", "2160000"]
+CMD ["--bootstrap-servers", "kafka1:9092,kafka2:9093,kafka3:9094"]

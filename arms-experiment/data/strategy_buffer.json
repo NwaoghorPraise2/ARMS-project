@@ -1,0 +1,13 @@
+{
+  "timestamp": 1745704514.1559532,
+  "strategy": "RESOURCE_OPTIMIZED",
+  "workload_type": "BATCH_DATA_INTENSIVE",
+  "config": {
+    "leader.imbalance.check.interval.seconds": 300,
+    "leader.imbalance.per.broker.percentage": 20,
+    "num.replica.fetchers": 2,
+    "rebalance.priority": "resource",
+    "replica.fetch.max.bytes": 524288,
+    "replica.lag.time.max.ms": 30000
+  }
+}

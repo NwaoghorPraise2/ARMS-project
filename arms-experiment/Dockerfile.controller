@@ -1,0 +1,30 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY /arms .
+COPY /models .
+
+# Create directory for data
+RUN mkdir -p /app/data
+
+EXPOSE 8002
+
+# Set environment variables
+ENV RECOVERY_API_URL=http://arms-classifier:5001/api/strategy
+ENV PROMETHEUS_URL=http://prometheus:9090/api/v1/query
+ENV CSV_FILE=/app/data/recovery_metrics.csv
+ENV BUFFER_FILE=/app/data/strategy_buffer.json
+ENV KAFKA_BROKERS=kafka1:9092,kafka2:9093,kafka3:9094
+
+# Volume for persisting data
+VOLUME ["/app/data"]
+
+ENTRYPOINT ["python", "arms_controller.py"]
+
+CMD ["--config-source", "buffer"]
