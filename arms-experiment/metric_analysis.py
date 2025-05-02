@@ -13,7 +13,7 @@ import time
 # Set random seed for reproducibility
 np.random.seed(42)
 
-def run_feature_selection_pipeline(csv_path, output_dir='output', threshold=1.2):
+def run_feature_selection_pipeline(csv_path, output_dir='output', threshold=0.8):
     """
     Execute the two-stage feature selection pipeline on Kafka workload dataset.
     
@@ -295,7 +295,7 @@ def run_feature_selection_pipeline(csv_path, output_dir='output', threshold=1.2)
 
 if __name__ == "__main__":
     # Execute the pipeline
-    csv_path = "/Users/nwaoghorpraise/Documents/ARMS PROJECT/arms-experiment/balanced_kafka_dataset_3000.csv"
+    csv_path = "/Users/nwaoghorpraise/Documents/ARMS PROJECT/arms-experiment/datasets/balanced_kafka_dataset_3000.csv"
     summary = run_feature_selection_pipeline(csv_path, output_dir="kafka_feature_selection_output")
     
     print("\nSelected Features:")

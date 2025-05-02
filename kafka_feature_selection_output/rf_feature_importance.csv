@@ -1,0 +1,6 @@
+Feature,Importance
+request_rate_variance,0.41124299156488303
+node_disk_write_bytes_total,0.27054220966618414
+message_rate_variance,0.15942458027071238
+node_memory_MemAvailable_bytes,0.10640606500177743
+kafka_server_brokertopicmetrics_messagesin_total,0.05238415349644302

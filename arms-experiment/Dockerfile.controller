@@ -27,4 +27,4 @@ VOLUME ["/app/data"]
 
 ENTRYPOINT ["python", "arms_controller.py"]
 
-CMD ["--config-source", "buffer"]
+CMD ["--config-source", "default"]

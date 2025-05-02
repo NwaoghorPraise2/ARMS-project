@@ -18,7 +18,7 @@ print("-" * 60)
 
 # Load the dataset
 print("Loading dataset...")
-df = pd.read_csv('balanced_kafka_dataset_3000.csv')
+df = pd.read_csv('/Users/nwaoghorpraise/Documents/ARMS PROJECT/arms-experiment/datasets/balanced_kafka_dataset_3000.csv')
 print(f"Dataset shape: {df.shape}")
 print(f"Class distribution:\n{df['workload_type'].value_counts()}")
 
