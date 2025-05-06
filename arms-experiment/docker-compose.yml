@@ -207,7 +207,7 @@ services:
       - METRICS_PORT=8002
       - TEST_MODE=True
       - TEST_BROKER=kafka1:9092 # Broker to simulate failures for
-      - TEST_INTERVAL=60 # Seconds between simulated failures
+      - TEST_INTERVAL=120 # Seconds between simulated failures
     volumes:
       - ./data:/app/data
       - /var/run/docker.sock:/var/run/docker.sock

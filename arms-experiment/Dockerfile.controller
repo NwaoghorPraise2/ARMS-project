@@ -26,5 +26,3 @@ ENV KAFKA_BROKERS=kafka1:9092,kafka2:9093,kafka3:9094
 VOLUME ["/app/data"]
 
 ENTRYPOINT ["python", "arms_controller.py"]
-
-CMD ["--config-source", "default"]

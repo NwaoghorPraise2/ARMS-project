@@ -2,6 +2,7 @@
 """
 Kafka Arms Controller - Monitors broker availability, fetches recovery strategies,
 triggers recovery mechanisms, and logs performance metrics.
+Enhanced with automatic switching between Buffer (ARMS) and Default (Baseline) modes in Test mode.
 """
 
 import csv
@@ -43,7 +44,13 @@ RECOVERY_WAIT_TIME = int(os.environ.get("RECOVERY_WAIT_TIME", "15"))  # seconds
 # Test mode configuration - set to True to artificially trigger recovery
 TEST_MODE = os.environ.get("TEST_MODE", "False").lower() in ("true", "1", "yes")
 TEST_BROKER = os.environ.get("TEST_BROKER", "kafka1:9092")  # Broker to simulate failure for
-TEST_INTERVAL = int(os.environ.get("TEST_INTERVAL", "60"))  # Seconds between test failures
+TEST_INTERVAL = int(os.environ.get("TEST_INTERVAL", "120"))  # Seconds between test failures
+
+# Auto-switching mode configuration
+AUTO_SWITCH_MODE = os.environ.get("AUTO_SWITCH_MODE", "False").lower() in ("true", "1", "yes") 
+CURRENT_MODE = "buffer"  # Start with buffer (ARMS)
+MODE_SWITCH_INTERVAL = int(os.environ.get("MODE_SWITCH_INTERVAL", "120"))  # Seconds between mode switches
+last_mode_switch_time = time.time()
 
 # Kafka broker configurations based on docker-compose - ONLY PRIMARY BROKERS
 kafka_brokers_env = os.environ.get("KAFKA_BROKERS", "kafka1:9092,kafka2:9093,kafka3:9094")
@@ -98,6 +105,141 @@ broker_availability = Gauge('kafka_broker_availability', 'Broker availability st
                             ['broker'])
 leader_election_time = Summary('kafka_leader_election_time_seconds', 'Time taken for leader election')
 
+# Add a Prometheus metric to track mode changes
+current_mode = Gauge('kafka_current_recovery_mode', 'Current active recovery mode (0=default, 1=buffer)', 
+                     ['mode_name'])
+
+# Create specialized workload-specific metric gauges
+workload_cpu_gauge = Gauge(
+    'kafka_recovery_cpu_usage_workload', 
+    'CPU usage during recovery by workload type and config source',
+    ['workload_type', 'config_source']
+)
+
+workload_memory_gauge = Gauge(
+    'kafka_recovery_memory_usage_workload', 
+    'Memory usage during recovery by workload type and config source',
+    ['workload_type', 'config_source']
+)
+
+recovery_time_gauge = Gauge(
+    'kafka_recovery_time_workload', 
+    'Recovery time by workload type and config source',
+    ['workload_type', 'config_source']
+)
+
+def register_initial_metrics():
+    """
+    Pre-register all required metrics combinations to ensure they exist
+    before they are needed by the dashboard
+    """
+    # Register workload types
+    workload_types = ["REAL-TIME", "BATCH"]
+    config_sources = ["buffer", "default"]
+    
+    for workload in workload_types:
+        for config in config_sources:
+            # Register strategy metrics
+            current_strategy.labels(
+                strategy="KAFKA-DEFAULT" if config == "default" else "ARMS-STRATEGY",
+                workload_type=workload,
+                config_source=config
+            ).set(0)
+            
+            # Register resource metrics
+            workload_cpu_gauge.labels(
+                workload_type=workload,
+                config_source=config
+            ).set(0)
+            
+            workload_memory_gauge.labels(
+                workload_type=workload,
+                config_source=config
+            ).set(0)
+            
+            recovery_time_gauge.labels(
+                workload_type=workload,
+                config_source=config
+            ).set(0)
+    
+    # Register mode metrics
+    current_mode.labels(mode_name="buffer").set(1)  # Start with ARMS
+    current_mode.labels(mode_name="default").set(0)
+    
+    logger.info("Successfully registered all initial metrics")
+
+def update_workload_metrics(metrics):
+    """
+    Update workload-specific metrics after each recovery operation
+    """
+    try:
+        workload_type = metrics.get('workload_type', 'UNKNOWN')
+        config_source = metrics.get('config_source', 'unknown')
+        
+        # Only update metrics for recognized workload types
+        if workload_type in ["REAL-TIME", "BATCH", "UNKNOWN"]:
+            # Update CPU usage metric
+            workload_cpu_gauge.labels(
+                workload_type=workload_type,
+                config_source=config_source
+            ).set(metrics.get('cpu_usage_percent', 0))
+            
+            # Update memory usage metric
+            workload_memory_gauge.labels(
+                workload_type=workload_type,
+                config_source=config_source
+            ).set(metrics.get('memory_usage_percent', 0))
+            
+            # Update recovery time metric
+            recovery_time_gauge.labels(
+                workload_type=workload_type,
+                config_source=config_source
+            ).set(metrics.get('recovery_time_seconds', 0))
+            
+            # Update strategy metrics
+            current_strategy.labels(
+                strategy=metrics.get('strategy', 'UNKNOWN'),
+                workload_type=workload_type,
+                config_source=config_source
+            ).set(1)
+            
+            logger.info(f"Updated workload metrics for {workload_type} workload with {config_source} configuration")
+    except Exception as e:
+        logger.error(f"Error updating workload metrics: {e}")
+
+def simulate_metrics_for_testing():
+    """
+    Call this function to simulate metrics for dashboard testing
+    This is ONLY for testing - remove in production
+    """
+    # Simulate metrics for REAL-TIME workload with ARMS (buffer) config
+    workload_cpu_gauge.labels(workload_type="REAL-TIME", config_source="buffer").set(45.5)
+    workload_memory_gauge.labels(workload_type="REAL-TIME", config_source="buffer").set(62.3)
+    recovery_time_gauge.labels(workload_type="REAL-TIME", config_source="buffer").set(12.8)
+    
+    # Simulate metrics for REAL-TIME workload with Baseline (default) config
+    workload_cpu_gauge.labels(workload_type="REAL-TIME", config_source="default").set(68.2)
+    workload_memory_gauge.labels(workload_type="REAL-TIME", config_source="default").set(73.1)
+    recovery_time_gauge.labels(workload_type="REAL-TIME", config_source="default").set(17.5)
+    
+    # Simulate metrics for BATCH workload with ARMS (buffer) config
+    workload_cpu_gauge.labels(workload_type="BATCH", config_source="buffer").set(38.9)
+    workload_memory_gauge.labels(workload_type="BATCH", config_source="buffer").set(55.7)
+    recovery_time_gauge.labels(workload_type="BATCH", config_source="buffer").set(9.3)
+    
+    # Simulate metrics for BATCH workload with Baseline (default) config
+    workload_cpu_gauge.labels(workload_type="BATCH", config_source="default").set(64.8)
+    workload_memory_gauge.labels(workload_type="BATCH", config_source="default").set(69.4)
+    recovery_time_gauge.labels(workload_type="BATCH", config_source="default").set(14.9)
+    
+    # Activate strategies
+    current_strategy.labels(strategy="ADAPTIVE-REPLICATION", workload_type="REAL-TIME", config_source="buffer").set(1)
+    current_strategy.labels(strategy="DEFAULT", workload_type="REAL-TIME", config_source="default").set(1)
+    current_strategy.labels(strategy="LOW-LATENCY-BATCH", workload_type="BATCH", config_source="buffer").set(1)
+    current_strategy.labels(strategy="DEFAULT", workload_type="BATCH", config_source="default").set(1)
+    
+    logger.info("Successfully simulated metrics for dashboard testing")
+
 def parse_config_args():
     """Parse command-line arguments for configuration"""
     parser = argparse.ArgumentParser(description='Kafka Arms Controller')
@@ -123,6 +265,24 @@ def parse_config_args():
         default=60,
         help='Interval between simulated failures in seconds'
     )
+    # Add new auto-switch arguments
+    parser.add_argument(
+        '--auto-switch',
+        action='store_true',
+        help='Automatically switch between buffer (ARMS) and default (Baseline) modes'
+    )
+    parser.add_argument(
+        '--switch-interval',
+        type=int,
+        default=300,
+        help='Interval in seconds between mode switches in auto-switch mode'
+    )
+    # Add simulated metrics parameter for testing
+    parser.add_argument(
+        '--simulate-metrics',
+        action='store_true',
+        help='Simulate metrics for dashboard testing (testing only)'
+    )
     return parser.parse_args()
 
 def is_broker_available(broker_url, timeout=10):
@@ -137,6 +297,8 @@ def is_broker_available(broker_url, timeout=10):
     Returns:
         tuple: (availability_status, cluster_metadata)
     """
+    global AUTO_SWITCH_MODE, CURRENT_MODE
+    
     # Initialize static variable for last test time if it doesn't exist
     if not hasattr(is_broker_available, 'last_test_time'):
         is_broker_available.last_test_time = 0
@@ -151,8 +313,12 @@ def is_broker_available(broker_url, timeout=10):
             # Store the time of this test
             is_broker_available.last_test_time = current_time
             
-            # Simulate broker failure
-            logger.warning(f"TEST MODE: Simulating failure for broker {broker_url}")
+            # Simulate broker failure with current mode info
+            if AUTO_SWITCH_MODE:
+                logger.warning(f"TEST MODE: Simulating failure for broker {broker_url} in {CURRENT_MODE.upper()} mode")
+            else:
+                logger.warning(f"TEST MODE: Simulating failure for broker {broker_url}")
+            
             broker_availability.labels(broker=broker_url).set(0)
             return False, None
     
@@ -810,9 +976,6 @@ def get_prometheus_metrics(broker_index):
     try:
         broker_id = broker_index + 1
         
-       
-
-
         # Multiple query strategies for CPU and memory
         cpu_queries = [
             'avg(rate(node_cpu_seconds_total{cluster="kafka-cluster"}[1m])) by (instance)'
@@ -910,7 +1073,7 @@ def trigger_recovery(broker_index, config_source=None):
     Returns:
         bool: Whether recovery was successful
     """
-    global strategy_buffer
+    global strategy_buffer, CURRENT_MODE, AUTO_SWITCH_MODE
     
     # Validate broker index
     if broker_index < 0 or broker_index >= len(KAFKA_BROKERS):
@@ -931,6 +1094,13 @@ def trigger_recovery(broker_index, config_source=None):
     # Record start time
     start_time = time.time()
     
+    # Use auto-switch current mode if enabled
+    if AUTO_SWITCH_MODE:
+        config_source_used = CURRENT_MODE
+        logger.info(f"Using AUTO-SWITCH current mode: {CURRENT_MODE}")
+    else:
+        config_source_used = config_source or 'buffer'
+    
     # Get strategy from buffer
     with buffer_lock:
         current_strategy = strategy_buffer.copy()
@@ -939,14 +1109,13 @@ def trigger_recovery(broker_index, config_source=None):
     recovery_result = False
     recovery_details = "Failed to complete recovery"
     applied_config = None
-    config_source_used = config_source or 'buffer'
     
     try:
         # Extract strategy details
         strategy_name = current_strategy.get("strategy", "DEFAULT")
         workload_type = current_strategy.get("workload_type", "UNKNOWN")
         
-        logger.info(f"Initiating recovery for broker {unavailable_broker} (ID: {broker_id}) with strategy: {strategy_name}")
+        logger.info(f"Initiating recovery for broker {unavailable_broker} (ID: {broker_id}) with strategy: {strategy_name}, mode: {config_source_used}")
         
         # Find all available brokers
         available_brokers = []
@@ -1061,9 +1230,15 @@ def trigger_recovery(broker_index, config_source=None):
         
         cpu_usage.set(cpu_percent)
         memory_usage.set(memory_percent)
+        
+        # Update workload-specific metrics
+        update_workload_metrics(metrics)
 
 def main():
-    """Main entry point with enhanced recovery coordination"""
+    """Main entry point with enhanced recovery coordination and auto-switching"""
+    global AUTO_SWITCH_MODE, CURRENT_MODE, last_mode_switch_time, MODE_SWITCH_INTERVAL
+    global TEST_MODE, TEST_BROKER, TEST_INTERVAL
+    
     logger.info("Starting Kafka Arms Controller")
     
     # Ensure data directory exists
@@ -1071,6 +1246,23 @@ def main():
     
     # Parse command-line arguments
     args = parse_config_args()
+    
+    # Setup auto-switching if enabled
+    AUTO_SWITCH_MODE = args.auto_switch
+    if AUTO_SWITCH_MODE:
+        MODE_SWITCH_INTERVAL = args.switch_interval
+        logger.info(f"AUTO-SWITCH MODE ENABLED - Will switch between ARMS and Baseline every {MODE_SWITCH_INTERVAL} seconds")
+        # Initialize mode metrics
+        current_mode.labels(mode_name="buffer").set(1)  # Start with ARMS
+        current_mode.labels(mode_name="default").set(0)
+    
+    # Register initial metrics for dashboard visualization
+    register_initial_metrics()
+    
+    # Check if simulated metrics are requested (for testing only)
+    if args.simulate_metrics:
+        logger.info("Simulating metrics for dashboard testing")
+        simulate_metrics_for_testing()
     
     # Start Prometheus metrics server
     start_metrics_server()
@@ -1086,7 +1278,6 @@ def main():
     time.sleep(BUFFER_UPDATE_INTERVAL * 2)
     
     # Check if test mode is enabled via command line
-    global TEST_MODE, TEST_BROKER, TEST_INTERVAL
     if args.test_mode:
         TEST_MODE = True
         TEST_BROKER = args.test_broker
@@ -1113,6 +1304,47 @@ def main():
     # Start monitoring brokers
     try:
         while True:
+            # Check if it's time to switch modes in auto-switch mode
+            if AUTO_SWITCH_MODE:
+                current_time = time.time()
+                if current_time - last_mode_switch_time >= MODE_SWITCH_INTERVAL:
+                    # Toggle between buffer and default
+                    if CURRENT_MODE == "buffer":
+                        CURRENT_MODE = "default"
+                        logger.info("AUTO-SWITCH: Switching to DEFAULT (Baseline) mode")
+                        # Update Prometheus metrics
+                        current_mode.labels(mode_name="buffer").set(0)
+                        current_mode.labels(mode_name="default").set(1)
+                    else:
+                        CURRENT_MODE = "buffer"
+                        logger.info("AUTO-SWITCH: Switching to BUFFER (ARMS) mode")
+                        # Update Prometheus metrics
+                        current_mode.labels(mode_name="buffer").set(1)
+                        current_mode.labels(mode_name="default").set(0)
+                    
+                    # Update the last switch time
+                    last_mode_switch_time = current_time
+                    
+                    # Log mode change to CSV
+                    metrics = {
+                        'timestamp': time.strftime('%Y-%m-%d %H:%M:%S'),
+                        'strategy': 'AUTO-SWITCH',
+                        'workload_type': 'ALL',
+                        'config_source': CURRENT_MODE,
+                        'recovery_time_seconds': 0,
+                        'cpu_usage_percent': 0,
+                        'memory_usage_percent': 0,
+                        'broker_url': 'N/A',
+                        'result': 'MODE_CHANGE',
+                        'under_replicated_before': 0,
+                        'under_replicated_after': 0,
+                        'offline_before': 0,
+                        'offline_after': 0,
+                        'details': f"Switched to {CURRENT_MODE.upper()} mode",
+                        'applied_config': {}
+                    }
+                    log_recovery_metrics(metrics)
+            
             any_broker_unavailable = False
             
             # Check all primary brokers
@@ -1136,7 +1368,7 @@ def main():
                 if not available:
                     any_broker_unavailable = True
                     if TEST_MODE and broker_url == TEST_BROKER:
-                        logger.warning(f"TEST MODE: {broker_url} reported unavailable. Triggering recovery...")
+                        logger.warning(f"TEST MODE: {broker_url} reported unavailable. Triggering recovery using {CURRENT_MODE} mode...")
                     else:
                         logger.warning(f"Broker {broker_url} is unavailable. Triggering recovery...")
                     
@@ -1144,10 +1376,13 @@ def main():
                     broker_recovery_status[broker_url]['in_recovery'] = True
                     broker_recovery_status[broker_url]['last_attempt'] = current_time
                     
+                    # Use current mode if auto-switching is enabled
+                    config_source_to_use = CURRENT_MODE if AUTO_SWITCH_MODE else args.config_source
+                    
                     # Start recovery in a separate thread to avoid blocking monitoring loop
                     recovery_thread = threading.Thread(
                         target=run_recovery,
-                        args=(i, args.config_source, broker_url, broker_recovery_status),
+                        args=(i, config_source_to_use, broker_url, broker_recovery_status),
                         daemon=True
                     )
                     recovery_thread.start()

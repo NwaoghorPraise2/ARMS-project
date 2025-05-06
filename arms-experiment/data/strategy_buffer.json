@@ -1,13 +1,13 @@
 {
-  "timestamp": 1745716177.9045932,
-  "strategy": "RESOURCE_OPTIMIZED",
-  "workload_type": "BATCH_DATA_INTENSIVE",
+  "timestamp": 1746538973.8135428,
+  "strategy": "QUICK_REBALANCE",
+  "workload_type": "REAL_TIME_EVENT_DRIVEN",
   "config": {
-    "leader.imbalance.check.interval.seconds": 300,
-    "leader.imbalance.per.broker.percentage": 20,
-    "num.replica.fetchers": 2,
-    "rebalance.priority": "resource",
-    "replica.fetch.max.bytes": 524288,
-    "replica.lag.time.max.ms": 30000
+    "leader.imbalance.check.interval.seconds": 30,
+    "leader.imbalance.per.broker.percentage": 10,
+    "num.replica.fetchers": 4,
+    "rebalance.priority": "speed",
+    "replica.fetch.max.bytes": 1048576,
+    "replica.lag.time.max.ms": 10000
   }
 }

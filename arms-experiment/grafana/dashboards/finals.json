@@ -1,0 +1,813 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": "Prometheus",
+        "enable": true,
+        "expr": "changes(kafka_recovery_total[1m]) > 0",
+        "iconColor": "rgba(255, 96, 96, 1)",
+        "name": "Recovery Events",
+        "showIn": 0,
+        "tags": [],
+        "titleFormat": "Broker Recovery"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "buffer": {
+                  "color": "blue",
+                  "index": 0,
+                  "text": "ARMS CONFIGURATION"
+                },
+                "default": {
+                  "color": "orange",
+                  "index": 1,
+                  "text": "BASELINE CONFIGURATION"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 40,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 24
+        },
+        "textMode": "name"
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "expr": "kafka_current_recovery_mode{mode_name=\"buffer\"} > 0",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "ARMS CONFIGURATION",
+          "refId": "A"
+        },
+        {
+          "expr": "kafka_current_recovery_mode{mode_name=\"default\"} > 0",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "BASELINE CONFIGURATION",
+          "refId": "B"
+        }
+      ],
+      "title": "CURRENT ACTIVE CONFIGURATION",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "DOWN"
+                },
+                "1": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "UP"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "text": {
+          "valueSize": 24
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "expr": "kafka_broker_availability",
+          "interval": "",
+          "legendFormat": "{{broker}}",
+          "refId": "A"
+        }
+      ],
+      "title": "BROKER AVAILABILITY",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "center",
+            "displayMode": "color-text",
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Workload Type"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Current Configuration"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "buffer": {
+                        "color": "blue",
+                        "index": 0,
+                        "text": "ARMS CONFIGURATION"
+                      },
+                      "default": {
+                        "color": "orange",
+                        "index": 1,
+                        "text": "BASELINE CONFIGURATION"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Active Strategy"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 250
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 16,
+      "options": {
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "expr": "kafka_recovery_current_strategy",
+          "format": "table",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "WORKLOAD TYPE AND STRATEGY",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "Value": true,
+              "__name__": true,
+              "instance": true,
+              "job": true
+            },
+            "indexByName": {
+              "Time": 0,
+              "Value": 6,
+              "__name__": 1,
+              "config_source": 4,
+              "instance": 7,
+              "job": 8,
+              "strategy": 2,
+              "workload_type": 3
+            },
+            "renameByName": {
+              "config_source": "Current Configuration",
+              "strategy": "Active Strategy",
+              "workload_type": "Workload Type"
+            }
+          }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": {
+            "include": {
+              "names": [
+                "Workload Type",
+                "Current Configuration",
+                "Active Strategy"
+              ]
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Seconds",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/ARMS.*REAL-TIME/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/BASELINE.*REAL-TIME/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/ARMS.*BATCH/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/BASELINE.*BATCH/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 8,
+      "options": {
+        "barWidth": 0.5,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "text": {
+          "valueSize": 12
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "expr": "sum(kafka_recovery_time_seconds_sum{config_source=\"buffer\", workload_type=\"REAL-TIME\"}) / sum(kafka_recovery_time_seconds_count{config_source=\"buffer\", workload_type=\"REAL-TIME\"})",
+          "interval": "",
+          "legendFormat": "ARMS - REAL-TIME WORKLOAD",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(kafka_recovery_time_seconds_sum{config_source=\"default\", workload_type=\"REAL-TIME\"}) / sum(kafka_recovery_time_seconds_count{config_source=\"default\", workload_type=\"REAL-TIME\"})",
+          "interval": "",
+          "legendFormat": "BASELINE - REAL-TIME WORKLOAD",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(kafka_recovery_time_seconds_sum{config_source=\"buffer\", workload_type=\"BATCH\"}) / sum(kafka_recovery_time_seconds_count{config_source=\"buffer\", workload_type=\"BATCH\"})",
+          "interval": "",
+          "legendFormat": "ARMS - BATCH WORKLOAD",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(kafka_recovery_time_seconds_sum{config_source=\"default\", workload_type=\"BATCH\"}) / sum(kafka_recovery_time_seconds_count{config_source=\"default\", workload_type=\"BATCH\"})",
+          "interval": "",
+          "legendFormat": "BASELINE - BATCH WORKLOAD",
+          "refId": "D"
+        }
+      ],
+      "title": "RECOVERY TIME BY CONFIGURATION AND WORKLOAD TYPE (LOWER IS BETTER)",
+      "type": "barchart"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Percent",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/ARMS.*REAL-TIME/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/BASELINE.*REAL-TIME/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/ARMS.*BATCH/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/BASELINE.*BATCH/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 12,
+      "options": {
+        "barWidth": 0.5,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "text": {
+          "valueSize": 12
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "expr": "avg_over_time(kafka_recovery_cpu_usage_percent{config_source=\"buffer\", workload_type=\"REAL-TIME\"}[$__range])",
+          "interval": "",
+          "legendFormat": "ARMS - REAL-TIME WORKLOAD",
+          "refId": "A"
+        },
+        {
+          "expr": "avg_over_time(kafka_recovery_cpu_usage_percent{config_source=\"default\", workload_type=\"REAL-TIME\"}[$__range])",
+          "interval": "",
+          "legendFormat": "BASELINE - REAL-TIME WORKLOAD",
+          "refId": "B"
+        },
+        {
+          "expr": "avg_over_time(kafka_recovery_cpu_usage_percent{config_source=\"buffer\", workload_type=\"BATCH\"}[$__range])",
+          "interval": "",
+          "legendFormat": "ARMS - BATCH WORKLOAD",
+          "refId": "C"
+        },
+        {
+          "expr": "avg_over_time(kafka_recovery_cpu_usage_percent{config_source=\"default\", workload_type=\"BATCH\"}[$__range])",
+          "interval": "",
+          "legendFormat": "BASELINE - BATCH WORKLOAD",
+          "refId": "D"
+        }
+      ],
+      "title": "CPU USAGE BY CONFIGURATION AND WORKLOAD TYPE (LOWER IS BETTER)",
+      "type": "barchart"
+    },
+    {
+      "datasource": "Prometheus",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "Percent",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/ARMS.*REAL-TIME/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/BASELINE.*REAL-TIME/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/ARMS.*BATCH/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/BASELINE.*BATCH/"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 14,
+      "options": {
+        "barWidth": 0.5,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "text": {
+          "valueSize": 12
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "7.5.7",
+      "targets": [
+        {
+          "expr": "avg_over_time(kafka_recovery_memory_usage_percent{config_source=\"buffer\", workload_type=\"REAL-TIME\"}[$__range])",
+          "interval": "",
+          "legendFormat": "ARMS - REAL-TIME WORKLOAD",
+          "refId": "A"
+        },
+        {
+          "expr": "avg_over_time(kafka_recovery_memory_usage_percent{config_source=\"default\", workload_type=\"REAL-TIME\"}[$__range])",
+          "interval": "",
+          "legendFormat": "BASELINE - REAL-TIME WORKLOAD",
+          "refId": "B"
+        },
+        {
+          "expr": "avg_over_time(kafka_recovery_memory_usage_percent{config_source=\"buffer\", workload_type=\"BATCH\"}[$__range])",
+          "interval": "",
+          "legendFormat": "ARMS - BATCH WORKLOAD",
+          "refId": "C"
+        },
+        {
+          "expr": "avg_over_time(kafka_recovery_memory_usage_percent{config_source=\"default\", workload_type=\"BATCH\"}[$__range])",
+          "interval": "",
+          "legendFormat": "BASELINE - BATCH WORKLOAD",
+          "refId": "D"
+        }
+      ],
+      "title": "MEMORY USAGE BY CONFIGURATION AND WORKLOAD TYPE (LOWER IS BETTER)",
+      "type": "barchart"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["kafka", "recovery", "arms"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Kafka Recovery Comparison",
+  "uid": "kafka-arms-ultra-simple",
+  "version": 1
+}
